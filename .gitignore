@@ -6,10 +6,11 @@
 /storage/*.key
 /vendor
 .env
-.env.backup
+.env.testing
 .env.production
 .phpactor.json
 .phpunit.result.cache
+phpunit.xml
 Homestead.json
 Homestead.yaml
 npm-debug.log
