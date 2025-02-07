@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * @extends User
+ * @extends Factory<User>
  */
 final class UserFactory extends Factory
 {
@@ -37,16 +37,16 @@ final class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'username' => fake()->unique()->userName(),
-            'description' => fake()->sentence(),
+            'name' => fake()->name,
+            'username' => fake()->unique()->userName,
+            'description' => fake()->sentence,
             'password' => static::$password ??= Hash::make('password'),
             'views' => fake()->numberBetween(0, 1000),
-            'avatar' => fake()->imageUrl(),
+            'avatar' => fake()->imageUrl,
             'avatar_updated_at' => now(),
-            'email' => fake()->unique()->safeEmail(),
+            'email' => fake()->unique()->safeEmail,
             'email_verified_at' => now(),
-            'phone' => fake()->unique()->phoneNumber(),
+            'phone' => fake()->unique()->phoneNumber,
             'phone_verified_at' => now(),
             'remember_token' => Str::random(10),
         ];

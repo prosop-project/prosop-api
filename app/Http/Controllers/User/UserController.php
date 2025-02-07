@@ -17,10 +17,17 @@ final readonly class UserController extends Controller
      * Display a single user by wrapping it in the UserResource.
      *
      * @param User $user
+     *
      * @return UserResource
      */
     public function show(User $user): UserResource
     {
+        $user->load([
+            'links' => function ($query) {
+                $query->where('is_visible', true);
+            }
+        ]);
+
         return UserResource::make($user);
     }
 }

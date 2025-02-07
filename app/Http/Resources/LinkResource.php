@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\User;
+use App\Models\Link;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin User
+ * @mixin Link
  */
-final class UserResource extends JsonResource
+final class LinkResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -22,12 +22,10 @@ final class UserResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'username' => $this->username,
+            'type' => $this->type,
             'description' => $this->description,
-            'views' => $this->views,
-            'avatar' => $this->avatar,
-            'links' => LinkResource::collection($this->whenLoaded('links')),
+            'value' => $this->value,
+            'click_count' => $this->click_count,
         ];
     }
 }
