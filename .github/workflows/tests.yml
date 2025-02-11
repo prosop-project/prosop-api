@@ -21,15 +21,9 @@ jobs:
         ports:
           - 5432:5432
         env:
-            DB_CONNECTION: pgsql
-            DB_HOST: 127.0.0.1
-            DB_PORT: 5432
-            DB_DATABASE: test_db
-            DB_USERNAME: postgres
-            DB_PASSWORD: secret
-            POSTGRES_DB: test_db
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: secret
+            POSTGRES_DB: laravel
+            POSTGRES_USER: sail
+            POSTGRES_PASSWORD: password
         options: >-
           --health-cmd "pg_isready -q -d testing -U user"
           --health-interval 10s
@@ -60,11 +54,11 @@ jobs:
       - name: Run Migrations
         env:
           DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
+          DB_HOST: pgsql
           DB_PORT: 5432
-          DB_DATABASE: test_db
-          DB_USERNAME: postgres
-          DB_PASSWORD: secret
+          DB_DATABASE: laravel
+          DB_USERNAME: sail
+          DB_PASSWORD: password
         run: php artisan migrate --force
 
       - name: Run Tests
