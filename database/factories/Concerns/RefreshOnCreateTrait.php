@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 trait RefreshOnCreateTrait
 {
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function create($attributes = [], ?Model $parent = null)
     {

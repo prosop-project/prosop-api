@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
  * @property int $id
@@ -23,14 +24,15 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $avatar_updated_at
  * @property string|null $email
  * @property Carbon|null $email_verified_at
- * @property string|null $phone
- * @property Carbon|null $phone_verified_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * TODO: add permission_bits and its logics e.g. it will behave differently for the admin and normal user - update user as admin etc., add permission_bits to hidden
  *
  * @property-read Collection<int, Link> $links
+ *
+ * @class User
  */
-final class User extends Authenticatable
+final class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -67,9 +69,24 @@ final class User extends Authenticatable
             'views' => 'integer',
             'avatar_updated_at' => 'datetime',
             'email_verified_at' => 'datetime',
-            'phone_verified_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getJWTIdentifier(): mixed
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getJWTCustomClaims(): array
+    {
+        return [];
     }
 }

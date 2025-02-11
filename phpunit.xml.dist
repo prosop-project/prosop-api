@@ -25,5 +25,6 @@
         <env name="DB_DATABASE" value="laravel"/>
         <env name="DB_USERNAME" value="sail"/>
         <env name="DB_PASSWORD" value="password"/>
+        <env name="JWT_SECRET" value=""/>
     </php>
 </phpunit>

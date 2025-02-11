@@ -22,8 +22,6 @@ return new class extends Migration
             $table->timestamp('avatar_updated_at')->nullable();
             $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('phone')->unique()->nullable();
-            $table->timestamp('phone_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
