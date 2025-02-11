@@ -21,6 +21,12 @@ jobs:
         ports:
           - 5432:5432
         env:
+            DB_CONNECTION: pgsql
+            DB_HOST: 127.0.0.1
+            DB_PORT: 5432
+            DB_DATABASE: test_db
+            DB_USERNAME: postgres
+            DB_PASSWORD: secret
             POSTGRES_DB: test_db
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: secret
@@ -49,6 +55,7 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate
+          php artisan jwt:secret
 
       - name: Run Migrations
         env:
