@@ -1,80 +1,67 @@
-name: Run Tests
+name: Run Unit Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
-  laravel-tests:
+  test:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [ 8.2, 8.3, 8.4 ]
 
     services:
-      postgres:
+      pgsql:
         image: postgres:17
-        env:
-          POSTGRES_DB: laravel
-          POSTGRES_USER: sail
-          POSTGRES_PASSWORD: password
         ports:
           - 5432:5432
+        env:
+            POSTGRES_DB: test_db
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: secret
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -q -d testing -U user"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
     steps:
-      - uses: shivammathur/setup-php@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
-          extensions: pdo_pgsql, pgsql
-          coverage: xdebug
-
-      - uses: actions/checkout@v4
-
-      - name: Copy .env
-        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+          php-version: ${{ matrix.php }}
+          extensions: json, dom, curl, libxml, mbstring, zip, pdo_pgsql
+          tools: composer:v2
+          coverage: none
 
       - name: Install Dependencies
+        run: composer install --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Prepare Laravel
         run: |
-          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-          composer require laravel/sail --dev
-
-      - name: Generate key
-        run: php artisan key:generate
-
-      - name: Generate JWT Secret
-        run: |
-          php artisan jwt:secret
-          # Update phpunit.xml.dist with the generated JWT secret
-          sed -i "s/<env name=\"JWT_SECRET\" value=\"\"\/>/<env name=\"JWT_SECRET\" value=\"$JWT_SECRET\"\/>/" phpunit.xml.dist
-
-      - name: Directory Permissions
-        run: chmod -R 777 storage bootstrap/cache
-
-      - name: Create Database
-        run: |
-          sudo apt-get install -y postgresql-client
-          PGPASSWORD=password psql -h localhost -U sail -d laravel -c "SELECT 1;"
+          cp .env.example .env
+          php artisan key:generate
 
       - name: Run Migrations
         env:
           DB_CONNECTION: pgsql
           DB_HOST: 127.0.0.1
           DB_PORT: 5432
-          DB_DATABASE: laravel
-          DB_USERNAME: sail
-          DB_PASSWORD: password
+          DB_DATABASE: test_db
+          DB_USERNAME: postgres
+          DB_PASSWORD: secret
         run: php artisan migrate --force
 
       - name: Run Tests
-        env:
-          DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: laravel
-          DB_USERNAME: sail
-          DB_PASSWORD: password
-        run: php artisan test --parallel
+        run: vendor/bin/phpunit --log-junit phpunit-report.xml
+
+
+
