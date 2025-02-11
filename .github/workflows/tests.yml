@@ -69,6 +69,9 @@ jobs:
       - name: Generate Application Key
         run: php artisan key:generate
 
+      - name: Set JWT Secret
+        run: php artisan jwt:secret --force  # Fix for JWT not being set
+
       - name: Run Migrations
         run: php artisan migrate --force
 
