@@ -64,6 +64,7 @@ jobs:
           echo "DB_DATABASE=laravel" >> .env
           echo "DB_USERNAME=sail" >> .env
           echo "DB_PASSWORD=password" >> .env
+          echo "JWT_SECRET=$(php -r 'echo bin2hex(random_bytes(32));')" >> .env
 
       - name: Generate Application Key
         run: php artisan key:generate
