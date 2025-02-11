@@ -50,7 +50,7 @@ jobs:
           key: dependencies-php-${{ matrix.php-version }}-L${{ matrix.laravel }}-${{ matrix.dependency-version }}-composer-${{ hashFiles('composer.json') }}
 
       - name: Install Composer Dependencies
-        run: composer install --no-interaction --no-scripts --no-progress --prefer-dist --${{ matrix.dependency-version }}
+        run: composer install --no-interaction --no-scripts --no-progress --prefer-dist --${{ matrix.dependency-version }} || composer install --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Copy Environment File
         run: cp .env.example .env
