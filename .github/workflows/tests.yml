@@ -1,4 +1,4 @@
-name: Unit Tests
+name: Main
 
 on:
   push:
@@ -7,50 +7,51 @@ on:
   pull_request:
 
 jobs:
-  tests:
-    runs-on: ubuntu-latest
+  test:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
       matrix:
-        php-version: [8.2, 8.3, 8.4]
-        laravel: [11]
-        dependency-version: [prefer-lowest, prefer-stable]
+        os: [ ubuntu-latest ]
+        php: [ 8.2, 8.3, 8.4 ]
+        laravel: [ 10, 11 ]
+        dependency-version: [ prefer-lowest, prefer-stable ]
 
-    name: Tests PHP${{ matrix.php-version }} - Laravel v${{ matrix.laravel }}
+    name: Tests PHP${{ matrix.php }} - Laravel v${{ matrix.laravel }}
     services:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_DB: testing_db
-          POSTGRES_USER: user
+          POSTGRES_DB: laravel
+          POSTGRES_USER: sail
           POSTGRES_PASSWORD: password
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U user -d testing_db"
+          --health-cmd="pg_isready -U sail -d laravel"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
 
       - name: Setup PHP Environment
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "${{ matrix.php-version }}"
-          extensions: pdo, pdo_pgsql, dom, mbstring, zip
+          php-version: ${{ matrix.php }}
+          extensions: dom, mbstring, zip, pdo, pdo_pgsql
           coverage: none
 
       - name: Cache Composer Dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v1
         with:
           path: ~/.composer/cache/files
-          key: dependencies-php-${{ matrix.php-version }}-L${{ matrix.laravel }}-${{ matrix.dependency-version }}-composer-${{ hashFiles('composer.json') }}
+          key: dependencies-php-${{ matrix.php }}-L${{ matrix.laravel }}-${{ matrix.dependency-version }}-composer-${{ hashFiles('composer.json') }}
 
       - name: Install Composer Dependencies
-        run: composer install --no-interaction --no-scripts --no-progress --prefer-dist --${{ matrix.dependency-version }} || composer install --no-interaction --no-scripts --no-progress --prefer-dist
+        run: composer install --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Copy Environment File
         run: cp .env.example .env
@@ -60,8 +61,8 @@ jobs:
           echo "DB_CONNECTION=pgsql" >> .env
           echo "DB_HOST=127.0.0.1" >> .env
           echo "DB_PORT=5432" >> .env
-          echo "DB_DATABASE=testing_db" >> .env
-          echo "DB_USERNAME=user" >> .env
+          echo "DB_DATABASE=laravel" >> .env
+          echo "DB_USERNAME=sail" >> .env
           echo "DB_PASSWORD=password" >> .env
 
       - name: Generate Application Key
@@ -76,5 +77,5 @@ jobs:
       - name: Upload PHPUnit Report
         uses: actions/upload-artifact@v4
         with:
-          name: phpunit-report-php${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-${{ matrix.dependency-version }}
+          name: phpunit-report-php${{ matrix.php }}-laravel-${{ matrix.laravel }}-${{ matrix.dependency-version }}
           path: phpunit-report.xml
