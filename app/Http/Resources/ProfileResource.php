@@ -11,7 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * @mixin User
  */
-final class UserResource extends JsonResource
+final class ProfileResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

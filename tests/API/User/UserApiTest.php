@@ -1,9 +1,10 @@
 <?php
 
-namespace Tests\API;
+namespace Tests\API\User;
 
 use App\Models\Link;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -102,6 +103,95 @@ class UserApiTest extends TestCase
                             'value' => 'test@mail.com',
                         ],
                     ],
+                ]
+            ]);
+    }
+
+    #[Test]
+    public function it_tests_user_profile_route()
+    {
+        /* SETUP */
+        $myPassword = 'my_password';
+        $user = User::factory()->create(['username' => 'test_user', 'password' => Hash::make($myPassword)]);
+        $existingUser = [
+            'username' => $user->username,
+            'password' => $myPassword,
+        ];
+        $token = $this->postJson(route('auth.login'), $existingUser)->json('data.token');
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+        ])->getJson(route('users.profile'));
+
+        /* ASSERT */
+        $response->assertOk()
+            ->assertJsonMissing([
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'username' => $user->username,
+                    'description' => $user->description,
+                    'views' => $user->views,
+                    'avatar' => $user->avatar,
+                    'email' => $user->email,
+                ]
+            ]);
+    }
+
+    #[Test]
+    public function it_tests_delete_user_route()
+    {
+        /* SETUP */
+        $myPassword = 'my_password';
+        $user = User::factory()->create(['username' => 'test_user', 'password' => Hash::make($myPassword)]);
+        $existingUser = [
+            'username' => $user->username,
+            'password' => $myPassword,
+        ];
+        $token = $this->postJson(route('auth.login'), $existingUser)->json('data.token');
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+        ])->deleteJson(route('users.delete', ['user' => $user->id, 'password' => $myPassword]));
+
+        /* ASSERT */
+        $response->assertOk()
+            ->assertJson([
+                'message' => 'User deleted successfully!',
+            ]);
+    }
+
+    #[Test]
+    public function it_tests_update_user_route()
+    {
+        /* SETUP */
+        $myPassword = 'my_password';
+        $user = User::factory()->create(['username' => 'test_user', 'password' => Hash::make($myPassword)]);
+        $existingUser = [
+            'username' => $user->username,
+            'password' => $myPassword,
+        ];
+        $token = $this->postJson(route('auth.login'), $existingUser)->json('data.token');
+        $newUserName = 'updated_username';
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+        ])->patchJson(route('users.update', ['user' => $user->id, 'username' => $newUserName]));
+
+        /* ASSERT */
+        $response->assertOk()
+            ->assertJson([
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'username' => $newUserName,
+                    'description' => $user->description,
+                    'views' => $user->views,
+                    'avatar' => $user->avatar,
+                    'email' => $user->email,
                 ]
             ]);
     }

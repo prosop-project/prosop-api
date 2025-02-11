@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Carbon|null $updated_at
  *
  * @property-read User $user
+ *
+ * @class Link
  */
 final class Link extends Model
 {
