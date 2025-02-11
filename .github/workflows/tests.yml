@@ -1,16 +1,15 @@
-name: Run Unit Tests
+name: Run Tests
 
 on:
   push:
-    branches:
-      - master
+    branches: [ master ]
   pull_request:
-    branches:
-      - master
+    branches: [ master ]
 
 jobs:
-  test:
+  laravel-tests:
     runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres:17
@@ -21,37 +20,61 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U sail -d laravel"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_pgsql, pgsql
+          coverage: xdebug
 
-      - name: Set up Docker
-        run: |
-          cp .env.example .env
-          echo "DB_HOST=127.0.0.1" >> .env
-          echo "JWT_SECRET=testing-secret-key" >> .env
+      - uses: actions/checkout@v4
 
-      - name: Start Laravel Sail
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+      - name: Install Dependencies
         run: |
-          ./vendor/bin/sail up -d
-          ./vendor/bin/sail artisan key:generate
+          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+          composer require laravel/sail --dev
+
+      - name: Generate key
+        run: php artisan key:generate
+
+      - name: Generate JWT Secret
+        run: |
+          php artisan jwt:secret
+          # Update phpunit.xml.dist with the generated JWT secret
+          sed -i "s/<env name=\"JWT_SECRET\" value=\"\"\/>/<env name=\"JWT_SECRET\" value=\"$JWT_SECRET\"\/>/" phpunit.xml.dist
+
+      - name: Directory Permissions
+        run: chmod -R 777 storage bootstrap/cache
+
+      - name: Create Database
+        run: |
+          sudo apt-get install -y postgresql-client
+          PGPASSWORD=password psql -h localhost -U sail -d laravel -c "SELECT 1;"
+
+      - name: Run Migrations
         env:
-          WWWUSER: 1001
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: laravel
+          DB_USERNAME: sail
+          DB_PASSWORD: password
+        run: php artisan migrate --force
 
-      - name: Install dependencies
-        run: ./vendor/bin/sail composer install --prefer-dist --no-progress --no-scripts --no-interaction
-
-      - name: Run migrations
-        run: ./vendor/bin/sail artisan migrate --env=testing --force
-
-      - name: Execute tests
-        run: ./vendor/bin/sail test --parallel
-
-      - name: Stop Laravel Sail
-        if: always()
-        run: ./vendor/bin/sail down
+      - name: Run Tests
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: laravel
+          DB_USERNAME: sail
+          DB_PASSWORD: password
+        run: php artisan test --parallel
