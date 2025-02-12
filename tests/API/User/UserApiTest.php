@@ -195,4 +195,30 @@ class UserApiTest extends TestCase
                 ]
             ]);
     }
+
+    #[Test]
+    public function it_tests_validations_of_update_user_route()
+    {
+        /* SETUP */
+        $myPassword = 'my_password';
+        $user = User::factory()->create(['username' => 'test_user', 'password' => Hash::make($myPassword)]);
+        $existingUser = [
+            'username' => $user->username,
+            'password' => $myPassword,
+        ];
+        $token = $this->postJson(route('auth.login'), $existingUser)->json('data.token');
+        $newData = [
+            'user' => $user->id,
+            'email' => 'rand_text_not_email',
+        ];
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+        ])->patchJson(route('users.update', $newData));
+
+        /* ASSERT */
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['username', 'email']);
+    }
 }

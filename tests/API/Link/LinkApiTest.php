@@ -40,8 +40,7 @@ class LinkApiTest extends TestCase
 
         /* ASSERT */
         $response->assertStatus(422)
-            ->assertJsonValidationErrors('value')
-            ->assertJsonValidationErrors('is_visible');
+            ->assertJsonValidationErrors(['value', 'is_visible']);
     }
 
     #[Test]
