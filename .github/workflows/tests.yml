@@ -1,0 +1,75 @@
+name: Run Unit Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  DB_CONNECTION: pgsql
+  DB_HOST: 127.0.0.1
+  DB_PORT: 5432
+  DB_DATABASE: laravel
+  DB_USERNAME: sail
+  DB_PASSWORD: password
+  JWT_SECRET: $(php artisan jwt:secret --show)
+
+jobs:
+  test:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [ 8.2, 8.3, 8.4 ]
+
+    services:
+      pgsql:
+        image: postgres:17
+        ports:
+          - 5432:5432
+        env:
+            POSTGRES_DB: ${{ env.DB_DATABASE }}
+            POSTGRES_USER: ${{ env.DB_USERNAME }}
+            POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
+        options: >-
+          --health-cmd "pg_isready -q -d testing -U user"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, dom, curl, libxml, mbstring, zip, pdo_pgsql
+          tools: composer:v2
+          coverage: none
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Prepare Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run Migrations
+        env:
+          DB_CONNECTION: ${{ env.DB_CONNECTION }}
+          DB_HOST: ${{ env.DB_HOST }}
+          DB_PORT: ${{ env.DB_PORT }}
+          DB_DATABASE: ${{ env.DB_DATABASE }}
+          DB_USERNAME: ${{ env.DB_USERNAME }}
+          DB_PASSWORD: ${{ env.DB_PASSWORD }}
+        run: php artisan migrate --force
+
+      - name: Run Tests
+        env:
+          JWT_SECRET: ${{ env.JWT_SECRET }}
+        run: vendor/bin/phpunit --log-junit phpunit-report.xml
