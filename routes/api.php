@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Link\LinkController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,4 +21,10 @@ Route::prefix('users')->name('users.')->group(function () {
     });
 
     Route::get('/{user}', [UserController::class, 'show'])->name('show');
+});
+
+Route::middleware('auth:api')->prefix('links')->name('links.')->group(function () {
+    Route::post('/', [LinkController::class, 'create'])->name('create');
+    Route::delete('/{link}', [LinkController::class, 'delete'])->name('delete');
+    Route::patch('/{link}', [LinkController::class, 'update'])->name('update');
 });

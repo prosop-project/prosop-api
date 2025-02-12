@@ -28,7 +28,12 @@ final class UserResource extends JsonResource
             'views' => $this->views,
             'avatar' => $this->avatar,
             'email' => $this->email,
-            'links' => LinkResource::collection($this->whenLoaded('links')),
+            // Here we don't want to show the click_count and the is_visible fields of the links in the user resource.
+            'links' => $this->whenLoaded('links', function () {
+                return $this->links->map(function ($link) {
+                    return new LinkResource(resource: $link, showClickCount: false, showIsVisible: false);
+                });
+            }),
         ];
     }
 }

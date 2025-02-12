@@ -45,6 +45,24 @@ class AuthApiTest extends TestCase
     }
 
     #[Test]
+    public function it_tests_validations_for_register_request()
+    {
+        /* SETUP */
+        $newUser = [
+            'name' => fake()->name,
+            'description' => fake()->sentence,
+            'email' => 'rand_text_not_email',
+        ];
+
+        /* EXECUTE */
+        $response = $this->postJson(route('auth.register', $newUser));
+
+        /* ASSERT */
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['username', 'password', 'email']);
+    }
+
+    #[Test]
     public function it_tests_login_request_and_retrieves_token()
     {
         /* SETUP */
@@ -79,6 +97,33 @@ class AuthApiTest extends TestCase
                     'message' => 'Login successful!',
                     'token' => Arr::get($response, 'data.token')
                 ],
+            ]);
+    }
+
+    #[Test]
+    public function it_tests_login_request_validatin_required_for_username_and_password()
+    {
+        /* SETUP */
+        $username = fake()->userName;
+        $password = fake()->password(8, 32);
+        $newUser = [
+            'name' => fake()->name,
+            'username' => $username,
+            'description' => fake()->sentence,
+            'password' => $password,
+            'email' => fake()->email,
+        ];
+        $this->postJson(route('auth.register', $newUser));
+        $existingUser = [];
+
+        /* EXECUTE */
+        $response = $this->postJson(route('auth.login', $existingUser));
+
+        /* ASSERT */
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors([
+                'username',
+                'password',
             ]);
     }
 
