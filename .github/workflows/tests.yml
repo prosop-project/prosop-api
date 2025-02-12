@@ -47,7 +47,6 @@ jobs:
 
       - name: Prepare Laravel
         run: |
-          cp .env.ci .env.testing
           cp .env.example .env
           php artisan key:generate
 
@@ -63,6 +62,5 @@ jobs:
 
       - name: Run Tests
         env:
-          APP_ENV: testing
           JWT_SECRET: $(php artisan jwt:secret --show)
         run: vendor/bin/phpunit --log-junit phpunit-report.xml
