@@ -126,7 +126,7 @@ class UserApiTest extends TestCase
 
         /* ASSERT */
         $response->assertOk()
-            ->assertJsonMissing([
+            ->assertJson([
                 'data' => [
                     'id' => $user->id,
                     'name' => $user->name,

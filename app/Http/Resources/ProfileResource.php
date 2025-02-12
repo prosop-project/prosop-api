@@ -28,7 +28,12 @@ final class ProfileResource extends JsonResource
             'views' => $this->views,
             'avatar' => $this->avatar,
             'email' => $this->email,
-            'links' => LinkResource::collection($this->whenLoaded('links')),
+            // Here we want to show the click_count and the is_visible fields of the links in the user profile resource.
+            'links' => $this->whenLoaded('links', function () {
+                return $this->links->map(function ($link) {
+                    return new LinkResource(resource: $link, showClickCount: true, showIsVisible: true);
+                });
+            }),
         ];
     }
 }
