@@ -50,12 +50,6 @@ jobs:
           cp .env.ci .env.testing
           cp .env.example .env
           php artisan key:generate
-          php artisan jwt:secret --force
-
-      - name: Set JWT Secret
-        run: |
-          php artisan jwt:secret --force
-          echo "JWT_SECRET=$(php artisan jwt:secret --show)" >> .env.testing
 
       - name: Run Migrations
         env:
