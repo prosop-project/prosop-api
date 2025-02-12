@@ -57,11 +57,6 @@ jobs:
           php artisan jwt:secret --force
           echo "JWT_SECRET=$(php artisan jwt:secret --show)" >> .env.testing
 
-      - name: Clear Laravel Cache
-        run: |
-          php artisan config:clear
-          php artisan cache:clear
-
       - name: Run Migrations
         env:
           DB_CONNECTION: pgsql
@@ -77,6 +72,3 @@ jobs:
           APP_ENV: testing
           JWT_SECRET: $(php artisan jwt:secret --show)
         run: vendor/bin/phpunit --log-junit phpunit-report.xml
-
-
-
