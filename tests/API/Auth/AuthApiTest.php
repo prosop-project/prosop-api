@@ -21,7 +21,7 @@ class AuthApiTest extends TestCase
             'name' => fake()->name,
             'username' => fake()->userName,
             'description' => fake()->sentence,
-            'password' => fake()->password,
+            'password' => fake()->password(8, 32),
             'email' => fake()->email,
         ];
 
@@ -49,7 +49,7 @@ class AuthApiTest extends TestCase
     {
         /* SETUP */
         $username = fake()->userName;
-        $password = fake()->password;
+        $password = fake()->password(8, 32);
         $newUser = [
             'name' => fake()->name,
             'username' => $username,
@@ -87,7 +87,7 @@ class AuthApiTest extends TestCase
     {
         /* SETUP */
         $username = fake()->userName;
-        $password = fake()->password;
+        $password = fake()->password(8, 32);
         $newUser = [
             'name' => fake()->name,
             'username' => $username,
