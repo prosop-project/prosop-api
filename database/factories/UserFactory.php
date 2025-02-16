@@ -8,7 +8,6 @@ use App\Models\User;
 use Database\Factories\Concerns\RefreshOnCreateTrait;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<User>
@@ -46,7 +45,6 @@ final class UserFactory extends Factory
             'avatar_updated_at' => now(),
             'email' => fake()->unique()->safeEmail,
             'email_verified_at' => now(),
-            'remember_token' => Str::random(10),
         ];
     }
 

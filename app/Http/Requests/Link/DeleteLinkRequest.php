@@ -18,8 +18,8 @@ final class DeleteLinkRequest extends BaseRequest
      */
     public function authorize(): bool
     {
-        // TODO: permission_bits logic for admin
-        return auth()->user()?->id === $this->route('link')->user_id;
+        return (auth()->user()?->id === $this->route('link')->user_id)
+            || is_admin();
     }
 
     /**
