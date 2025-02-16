@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Http\Controllers\Auth;
 
 use App\Data\UserTokenData;
@@ -16,9 +14,6 @@ use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**
- * random comment
- *
- *
  * @class AuthController
  */
 final readonly class AuthController extends Controller
