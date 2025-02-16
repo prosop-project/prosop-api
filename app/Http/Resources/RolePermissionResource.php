@@ -7,9 +7,10 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 /**
- * @mixin Permission
+ * @mixin Permission|Role
  */
 final class RolePermissionResource extends JsonResource
 {
