@@ -7,7 +7,6 @@ namespace App\Http\Requests\User;
 use App\Http\Requests\BaseRequest;
 use App\Models\User;
 use App\Rules\Username;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 /**
@@ -27,8 +26,8 @@ final class UpdateUserRequest extends BaseRequest
      */
     public function authorize(): bool
     {
-        // TODO: also add permission_bits logic for admin
-        return Auth::check() && Auth::user()?->is($this->route('user'));
+        return (auth()->user()?->id === $this->route('user')->id)
+            || is_admin();
     }
 
     /**
@@ -36,7 +35,7 @@ final class UpdateUserRequest extends BaseRequest
      */
     public function rules(): array
     {
-        $user = Auth::user();
+        $user = auth()->user();
 
         return [
             'name' => ['nullable', 'string', 'max:50'],

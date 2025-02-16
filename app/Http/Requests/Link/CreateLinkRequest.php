@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Requests\Link;
 
 use App\Http\Requests\BaseRequest;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Validator;
 
 /**
@@ -25,8 +24,8 @@ final class CreateLinkRequest extends BaseRequest
      */
     public function authorize(): bool
     {
-        // TODO: also add permission_bits logic for admin
-        return Auth::check();
+        return (auth()->user()?->id === $this->route('user')->id)
+            || is_admin();
     }
 
     /**

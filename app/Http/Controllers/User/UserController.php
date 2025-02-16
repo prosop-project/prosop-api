@@ -5,18 +5,16 @@ declare(strict_types=1);
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\User\DeleteUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\ProfileResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**
- * //TODO: permission_bits logic should be applied for updating user, deleting user etc. and other relevant places
- * //TODO: $user->sendEmailVerificationNotification(); should be done similar to register user in case new email is set - for the places like update etc.
+ * TODO: $user->sendEmailVerificationNotification(); should be done similar to register user in case new email is set - for the places like update etc.
  *
  * @class UserController
  */
@@ -74,18 +72,13 @@ final readonly class UserController extends Controller
     /**
      * Delete a user.
      *
-     * @param Request $request
+     * @param DeleteUserRequest $_
      * @param User $user
      *
      * @return JsonResponse
      */
-    public function delete(Request $request, User $user): JsonResponse
+    public function delete(DeleteUserRequest $_, User $user): JsonResponse
     {
-        // Validate the password as required and matches the authenticated user's password.
-        $request->validate([
-            'password' => ['required', 'current_password']
-        ]);
-
         // Invalidate the token if it exists.
         if ($token = JWTAuth::getToken()) {
             JWTAuth::invalidate($token);
@@ -107,7 +100,7 @@ final readonly class UserController extends Controller
     public function profile(): ProfileResource
     {
         // Get the authenticated user.
-        $user = Auth::user();
+        $user = auth()->user();
 
         // Load user links including both visible and invisible links.
         $user->load(['links']);

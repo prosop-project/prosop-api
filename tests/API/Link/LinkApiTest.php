@@ -1,9 +1,10 @@
 <?php
 
-namespace API\Link;
+namespace Tests\API\Link;
 
 use App\Models\Link;
 use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\Test;
@@ -12,15 +13,16 @@ use Tests\TestCase;
 class LinkApiTest extends TestCase
 {
     private string $token = "";
+    private User|Authenticatable $user;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $myPassword = 'my_password';
-        $user = User::factory()->create(['username' => 'test_user', 'password' => Hash::make($myPassword)]);
+        $this->user = User::factory()->create(['username' => 'test_user', 'password' => Hash::make($myPassword)]);
         $existingUser = [
-            'username' => $user->username,
+            'username' => $this->user->username,
             'password' => $myPassword,
         ];
         $this->token = $this->postJson(route('auth.login'), $existingUser)->json('data.token');
@@ -30,15 +32,16 @@ class LinkApiTest extends TestCase
     public function it_tests_is_visible_and_value_are_required_validation_for_create_link_request()
     {
         /* SETUP */
-        $newLink = [
+        $parameters = [
             'type' => 'email',
             'description' => 'test description',
+            'user' => $this->user->id,
         ];
 
         /* EXECUTE */
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('links.create', $newLink));
+        ])->postJson(route('links.create', $parameters));
 
         /* ASSERT */
         $response->assertStatus(422)
@@ -49,26 +52,27 @@ class LinkApiTest extends TestCase
     public function it_tests_create_link_request()
     {
         /* SETUP */
-        $newLink = [
+        $parameters = [
             'type' => 'email',
             'description' => 'test description',
             'value' => 'test@email.com',
             'is_visible' => true,
+            'user' => $this->user->id,
         ];
 
         /* EXECUTE */
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('links.create', $newLink));
+        ])->postJson(route('links.create', $parameters));
 
         /* ASSERT */
         $response->assertCreated()
             ->assertJson([
                 'data' => [
-                    'type' => $newLink['type'],
-                    'description' => $newLink['description'],
-                    'value' => $newLink['value'],
-                    'is_visible' => $newLink['is_visible'],
+                    'type' => $parameters['type'],
+                    'description' => $parameters['description'],
+                    'value' => $parameters['value'],
+                    'is_visible' => $parameters['is_visible'],
                 ]
             ]);
     }
@@ -77,32 +81,33 @@ class LinkApiTest extends TestCase
     public function it_tests_max_number_of_links_can_be_attached_to_user()
     {
         /* SETUP */
-        $newLink = [
+        $parameters = [
             'type' => 'email',
             'description' => 'test description',
             'value' => 'test@email.com',
             'is_visible' => true,
+            'user' => $this->user->id,
         ];
 
         /* EXECUTE */
         $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('links.create', $newLink));
+        ])->postJson(route('links.create', $parameters));
         $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('links.create', $newLink));
+        ])->postJson(route('links.create', $parameters));
         $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('links.create', $newLink));
+        ])->postJson(route('links.create', $parameters));
         $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('links.create', $newLink));
+        ])->postJson(route('links.create', $parameters));
         $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('links.create', $newLink));
+        ])->postJson(route('links.create', $parameters));
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('links.create', $newLink));
+        ])->postJson(route('links.create', $parameters));
 
 
         /* ASSERT */
@@ -114,15 +119,16 @@ class LinkApiTest extends TestCase
     public function it_tests_delete_link_request()
     {
         /* SETUP */
-        $newLink = [
+        $parameters = [
             'type' => 'email',
             'description' => 'test description',
             'value' => 'test@email.com',
             'is_visible' => true,
+            'user' => $this->user->id,
         ];
          $link = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('links.create', $newLink));
+        ])->postJson(route('links.create', $parameters));
 
         /* EXECUTE */
         $response = $this->withHeaders([
@@ -145,6 +151,7 @@ class LinkApiTest extends TestCase
             'description' => 'test description',
             'value' => 'test@email.com',
             'is_visible' => true,
+            'user' => $this->user->id,
         ];
         $link = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
@@ -179,6 +186,7 @@ class LinkApiTest extends TestCase
             'value' => 'test@email.com',
             'is_visible' => true,
             'click_count' => 10,
+            'user' => $this->user->id,
         ];
         $link = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,

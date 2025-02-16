@@ -10,6 +10,7 @@ use App\Http\Requests\Link\DeleteLinkRequest;
 use App\Http\Requests\Link\UpdateLinkRequest;
 use App\Http\Resources\LinkResource;
 use App\Models\Link;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -21,13 +22,14 @@ final readonly class LinkController extends Controller
      * Create a new link.
      *
      * @param CreateLinkRequest $request
+     * @param User $user
      *
      * @return LinkResource
      */
-    public function create(CreateLinkRequest $request): LinkResource
+    public function create(CreateLinkRequest $request, User $user): LinkResource
     {
         $link = Link::query()->create([
-            'user_id' => auth()->id(),
+            'user_id' => $user->id,
             'type' => $request->type,
             'description' => $request->description,
             'value' => $request->value,

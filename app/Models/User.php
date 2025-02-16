@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
@@ -26,16 +27,15 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property Carbon|null $email_verified_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * TODO: add permission_bits and its logics e.g. it will behave differently for the admin and normal user - update user as admin etc., add permission_bits to hidden
  *
  * @property-read Collection<int, Link> $links
+ * @property-read Collection<int, Role> $roles
  *
  * @class User
  */
 final class User extends Authenticatable implements JWTSubject
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that should be hidden for serialization.
@@ -44,7 +44,6 @@ final class User extends Authenticatable implements JWTSubject
      */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**
