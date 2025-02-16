@@ -22,7 +22,7 @@ use Illuminate\Validation\Rule;
 final class UpdateUserRequest extends BaseRequest
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function authorize(): bool
     {
@@ -31,7 +31,7 @@ final class UpdateUserRequest extends BaseRequest
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function rules(): array
     {

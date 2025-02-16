@@ -16,7 +16,7 @@ use App\Http\Requests\BaseRequest;
 final class RoleRequest extends BaseRequest
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function rules(): array
     {

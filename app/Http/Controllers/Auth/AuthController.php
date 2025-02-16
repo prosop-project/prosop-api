@@ -30,21 +30,21 @@ final readonly class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $user = User::query()->create([
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
-                'name' => $request->name,
-                'description' => $request->description,
-                'email' => $request->email,
-            ]);
+            'username' => $request->username,
+            'password' => Hash::make($request->password),
+            'name' => $request->name,
+            'description' => $request->description,
+            'email' => $request->email,
+        ]);
 
-        //TODO:  event(new Registered($user)); and SendEmailVerificationNotification can be set in case email is set,
+        // TODO:  event(new Registered($user)); and SendEmailVerificationNotification can be set in case email is set,
 
         $token = JWTAuth::fromUser($user);
 
         // Login the user who just registered.
         Auth::login($user);
 
-        //TODO: update user avatar job can be added here and other places after implemented UpdateUserAvatar::dispatch($user);
+        // TODO: update user avatar job can be added here and other places after implemented UpdateUserAvatar::dispatch($user);
 
         // Set the user token data.
         $userTokenData = new UserTokenData(

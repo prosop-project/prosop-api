@@ -22,7 +22,7 @@ use Illuminate\Validation\Rules\Password;
 final class RegisterRequest extends BaseRequest
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function rules(): array
     {

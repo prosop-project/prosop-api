@@ -19,7 +19,7 @@ abstract class BaseRequest extends FormRequest
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
-    public abstract function rules(): array;
+    abstract public function rules(): array;
 
     /**
      * Determine if the user is authorized to make this request.

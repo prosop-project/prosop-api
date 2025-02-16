@@ -20,7 +20,7 @@ use Illuminate\Validation\Validator;
 final class CreateLinkRequest extends BaseRequest
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function authorize(): bool
     {
@@ -29,7 +29,7 @@ final class CreateLinkRequest extends BaseRequest
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function rules(): array
     {
