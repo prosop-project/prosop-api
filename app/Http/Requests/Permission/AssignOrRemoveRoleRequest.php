@@ -18,7 +18,7 @@ use Spatie\Permission\Models\Role;
 final class AssignOrRemoveRoleRequest extends BaseRequest
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function rules(): array
     {

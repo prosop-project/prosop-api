@@ -35,7 +35,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  */
 final class User extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that should be hidden for serialization.
@@ -74,7 +74,7 @@ final class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getJWTIdentifier(): mixed
     {
@@ -82,7 +82,7 @@ final class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getJWTCustomClaims(): array
     {

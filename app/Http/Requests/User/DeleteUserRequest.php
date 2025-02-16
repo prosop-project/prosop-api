@@ -16,7 +16,7 @@ use App\Http\Requests\BaseRequest;
 final class DeleteUserRequest extends BaseRequest
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function authorize(): bool
     {
@@ -25,12 +25,12 @@ final class DeleteUserRequest extends BaseRequest
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function rules(): array
     {
         return [
-            'password' => ['required', 'current_password']
+            'password' => ['required', 'current_password'],
         ];
     }
 }

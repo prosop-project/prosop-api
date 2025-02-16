@@ -19,7 +19,7 @@ use App\Http\Requests\BaseRequest;
 final class UpdateLinkRequest extends BaseRequest
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function authorize(): bool
     {
@@ -28,7 +28,7 @@ final class UpdateLinkRequest extends BaseRequest
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function rules(): array
     {

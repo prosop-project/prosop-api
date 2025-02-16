@@ -17,7 +17,7 @@ use App\Http\Requests\BaseRequest;
 final class LoginRequest extends BaseRequest
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function rules(): array
     {

@@ -54,7 +54,7 @@ final readonly class Username implements ValidationRule
         'upgrade', 'upload', 'user', 'username', 'users', 'validate', 'video', 'view',
         'web', 'webmail', 'webmaster', 'website', 'welcome', 'widget', 'wiki', 'windows',
         'wordpress', 'workshop', 'world', 'www', 'xml', 'xmp', 'yahoo', 'you', 'your',
-        'youtube', 'zero', 'prosop'
+        'youtube', 'zero', 'prosop',
     ];
 
     /**

@@ -32,7 +32,7 @@ final readonly class UserController extends Controller
         $user->load([
             'links' => function ($query) {
                 $query->where('is_visible', true);
-            }
+            },
         ]);
 
         return new UserResource($user);

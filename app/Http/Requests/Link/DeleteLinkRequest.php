@@ -14,7 +14,7 @@ use App\Http\Requests\BaseRequest;
 final class DeleteLinkRequest extends BaseRequest
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function authorize(): bool
     {
@@ -23,7 +23,7 @@ final class DeleteLinkRequest extends BaseRequest
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function rules(): array
     {
