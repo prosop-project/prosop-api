@@ -35,7 +35,7 @@ final class UpdateUserRequest extends BaseRequest
      */
     public function rules(): array
     {
-        $user = auth()->user();
+        $user = $this->route('user');
 
         return [
             'name' => ['nullable', 'string', 'max:50'],
