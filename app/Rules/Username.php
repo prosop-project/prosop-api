@@ -74,7 +74,7 @@ final readonly class Username implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         // Check if the username is reserved.
-        if (in_array(strtolower($value), self::RESERVED, true)) {
+        if (in_array(mb_strtolower($value), self::RESERVED, true)) {
             $fail('validation.username_reserved');
 
             return;

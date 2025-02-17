@@ -22,9 +22,9 @@ final readonly class ValidateUserIsAdmin
      * @param Request $request
      * @param Closure $next
      *
-     * @return Response
+     * @return Response|UnauthorizedException
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next): Response|UnauthorizedException
     {
         if (is_admin() || ! is_production()) {
             return $next($request);
