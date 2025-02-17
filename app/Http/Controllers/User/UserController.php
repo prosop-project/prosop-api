@@ -59,14 +59,14 @@ final readonly class UserController extends Controller
         $user->update($validatedRequest);
 
         // Invalidate the old token.
-        JWTAuth::invalidate(JWTAuth::getToken());
+        JWTAuth::parseToken()->invalidate(true);
         // Generate a new token for the updated user.
         $token = JWTAuth::fromUser($user);
 
         // Load the user links and updated user.
-        $user = $user->fresh()->load('links');
+        $user = $user->fresh()?->load('links');
 
-        return (new ProfileResource($user))->additional(['token' => $token ?? null]);
+        return (new ProfileResource($user))->additional(['token' => $token]);
     }
 
     /**
@@ -80,8 +80,8 @@ final readonly class UserController extends Controller
     public function delete(DeleteUserRequest $_, User $user): JsonResponse
     {
         // Invalidate the token if it exists.
-        if ($token = JWTAuth::getToken()) {
-            JWTAuth::invalidate($token);
+        if (JWTAuth::getToken()) {
+            JWTAuth::parseToken()->invalidate(true);
         }
 
         // Delete the user.
@@ -103,7 +103,7 @@ final readonly class UserController extends Controller
         $user = auth()->user();
 
         // Load user links including both visible and invisible links.
-        $user->load(['links']);
+        $user?->load(['links']);
 
         return new ProfileResource($user);
     }

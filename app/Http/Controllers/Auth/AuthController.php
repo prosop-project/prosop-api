@@ -68,20 +68,17 @@ final readonly class AuthController extends Controller
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        // Check if the user is already logged in.
-        if ($token = JWTAuth::getToken()) {
-            if ($user = JWTAuth::authenticate($token)) {
+        // Check if the user is already authenticated.
+        if (($token = JWTAuth::getToken()) && ($user = JWTAuth::authenticate())) {
+            // Set the user token data.
+            $userTokenData = new UserTokenData(
+                user: $user,
+                message: 'User already logged in!',
+                token: $token,
+            );
 
-                // Set the user token data.
-                $userTokenData = new UserTokenData(
-                    user: $user,
-                    message: 'User already logged in!',
-                    token: $token,
-                );
-
-                // Early return the user and token.
-                return $this->respondWithToken($userTokenData);
-            }
+            // Early return the user and token.
+            return $this->respondWithToken($userTokenData);
         }
 
         // Get the validated credentials.
@@ -112,8 +109,8 @@ final readonly class AuthController extends Controller
     public function logout(): JsonResponse
     {
         // Invalidate the token if it exists.
-        if ($token = JWTAuth::getToken()) {
-            JWTAuth::invalidate($token);
+        if (JWTAuth::getToken()) {
+            JWTAuth::parseToken()->invalidate(true);
         }
 
         return response()->json(['message' => 'Successfully logged out!']);

@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Hash;
  */
 final class UserFactory extends Factory
 {
+    /**
+     * @use RefreshOnCreateTrait<User>
+     */
     use RefreshOnCreateTrait;
 
     /**
