@@ -20,7 +20,7 @@ final class DeleteUserRequest extends BaseRequest
      */
     public function authorize(): bool
     {
-        return (auth()->user()?->id === $this->route('user')->id)
+        return (auth()->id() === $this->route('user')->id)
             || is_admin();
     }
 

@@ -5,12 +5,15 @@ declare(strict_types=1);
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Link\LinkController;
 use App\Http\Controllers\Permission\PermissionController;
+use App\Http\Controllers\Subscription\SubscriptionController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Middleware\ValidateUserIsAdmin;
 use Illuminate\Support\Facades\Route;
 
 /*
- * Endpoints for managing user authentication.
+ | -------------------------------------------
+ | Endpoints for managing user authentication.
+ | -------------------------------------------
  */
 Route::prefix('auth')->name('auth.')->group(function() {
     Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -19,7 +22,9 @@ Route::prefix('auth')->name('auth.')->group(function() {
 });
 
 /*
- * Endpoints for managing permissions, roles and user roles.
+ | ---------------------------------------------------------
+ | Endpoints for managing permissions, roles and user roles.
+ | ---------------------------------------------------------
  */
 Route::middleware(['auth:api', ValidateUserIsAdmin::class])->prefix('permissions')->name('permissions.')->group(function () {
     /*
@@ -53,7 +58,9 @@ Route::middleware(['auth:api', ValidateUserIsAdmin::class])->prefix('permissions
 });
 
 /*
- * Endpoints for managing user crud operations.
+ |--------------------------------------------
+ | Endpoints for managing user crud operations.
+ |--------------------------------------------
  */
 Route::prefix('users')->name('users.')->group(function () {
     Route::middleware('auth:api')->group(function () {
@@ -66,10 +73,27 @@ Route::prefix('users')->name('users.')->group(function () {
 });
 
 /*
- * Endpoints for managing links crud operations.
+ |----------------------------------------------
+ | Endpoints for managing links crud operations.
+ |----------------------------------------------
  */
 Route::middleware('auth:api')->prefix('links')->name('links.')->group(function () {
     Route::post('/{user}', [LinkController::class, 'create'])->name('create');
     Route::delete('/{link}', [LinkController::class, 'delete'])->name('delete');
     Route::patch('/{link}', [LinkController::class, 'update'])->name('update');
+});
+
+/*
+ |--------------------------------------
+ | Endpoints for managing subscriptions.
+ |--------------------------------------
+ */
+Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+    Route::middleware('auth:api')->group(function () {
+        Route::post('/{user}', [SubscriptionController::class, 'subscribe'])->name('subscribe');
+        Route::delete('/{user}', [SubscriptionController::class, 'unsubscribe'])->name('unsubscribe');
+    });
+
+    Route::get('/{user}', [SubscriptionController::class, 'subscriptions'])->name('list');
+    Route::get('/{user}/subscribers', [SubscriptionController::class, 'subscribers'])->name('subscribers');
 });
