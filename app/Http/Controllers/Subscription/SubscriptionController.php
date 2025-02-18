@@ -78,7 +78,7 @@ final readonly class SubscriptionController extends Controller
     public function subscribers(User $user): AnonymousResourceCollection
     {
         // We get all users that subscribed to provided user.
-        $subscribers =  Subscription::query()->where(['user_id' => $user->id])->get();
+        $subscribers = Subscription::query()->where(['user_id' => $user->id])->get();
 
         return SubscriptionResource::collection($subscribers);
     }
