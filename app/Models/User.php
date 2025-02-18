@@ -30,6 +30,8 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property Carbon|null $updated_at
  *
  * @property-read Collection<int, Link> $links
+ * @property-read Collection<int, Subscription> $subscriptions
+ * @property-read Collection<int, Subscription> $subscribers
  * @property-read Collection<int, Role> $roles
  *
  * @class User
@@ -56,6 +58,26 @@ final class User extends Authenticatable implements JWTSubject
     public function links(): HasMany
     {
         return $this->hasMany(Link::class);
+    }
+
+    /**
+     * Get the user's subscriptions. (Users that this user has subscribed to)
+     *
+     * @return HasMany<Subscription, covariant $this>
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class, 'subscriber_id');
+    }
+
+    /**
+     * Get the user's subscribers. (Users who have subscribed to this user)
+     *
+     * @return HasMany<Subscription, covariant $this>
+     */
+    public function subscribers(): HasMany
+    {
+        return $this->hasMany(Subscription::class, 'user_id');
     }
 
     /**

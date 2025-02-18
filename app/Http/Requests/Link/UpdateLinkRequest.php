@@ -23,7 +23,7 @@ final class UpdateLinkRequest extends BaseRequest
      */
     public function authorize(): bool
     {
-        return (auth()->user()?->id === $this->route('link')->user_id)
+        return (auth()->id() === $this->route('link')->user_id)
             || is_admin();
     }
 

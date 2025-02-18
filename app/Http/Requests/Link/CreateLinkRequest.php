@@ -12,8 +12,8 @@ use Illuminate\Validation\Validator;
  *
  * @property string|null $type
  * @property string|null $description
- * @property string|null $value
- * @property bool|null $is_visible
+ * @property string $value
+ * @property bool $is_visible
  *
  * @class CreateLinkRequest
  */
@@ -24,7 +24,7 @@ final class CreateLinkRequest extends BaseRequest
      */
     public function authorize(): bool
     {
-        return (auth()->user()?->id === $this->route('user')->id)
+        return (auth()->id() === $this->route('user')->id)
             || is_admin();
     }
 
