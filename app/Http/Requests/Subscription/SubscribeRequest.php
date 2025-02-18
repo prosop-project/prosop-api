@@ -37,7 +37,7 @@ final class SubscribeRequest extends BaseRequest
             $subscriberId = auth()->id(); // Get the authenticated user id
 
             if (($subscriberId === $userId)) {
-                $validator->errors()->add('subscribe.yourself', 'You cannot subscribe/unsubscribe yourself.');
+                $validator->errors()->add('subscribe.yourself', 'You cannot subscribe yourself.');
             }
 
             // Check if subscription already exists

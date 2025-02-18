@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Subscription;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Subscription\SubscribeRequest;
-use App\Http\Requests\Subscription\UnsubscribeRequest;
 use App\Http\Resources\SubscriptionResource;
 use App\Models\Subscription;
 use App\Models\User;
@@ -39,12 +38,11 @@ final readonly class SubscriptionController extends Controller
     /**
      * Delete subscription (unsubscribe authenticated user to provided user)
      *
-     * @param UnsubscribeRequest $_
      * @param User $user
      *
      * @return JsonResponse
      */
-    public function unsubscribe(UnsubscribeRequest $_, User $user): JsonResponse
+    public function unsubscribe(User $user): JsonResponse
     {
         Subscription::query()
             ->where(['subscriber_id' => auth()->id()])
