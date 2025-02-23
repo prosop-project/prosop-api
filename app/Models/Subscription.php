@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Traits\LogsActivityTrait;
 use Carbon\Carbon;
 use Database\Factories\SubscriptionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,7 +26,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class Subscription extends Model
 {
     /** @use HasFactory<SubscriptionFactory> */
-    use HasFactory;
+    use HasFactory, LogsActivityTrait;
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    public function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
 
     /**
      * Get the user who is being subscribed to.
@@ -45,18 +59,5 @@ final class Subscription extends Model
     public function subscriber(): BelongsTo
     {
         return $this->belongsTo(User::class, 'subscriber_id');
-    }
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    public function casts(): array
-    {
-        return [
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-        ];
     }
 }

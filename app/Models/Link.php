@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Traits\LogsActivityTrait;
 use Carbon\Carbon;
 use Database\Factories\LinkFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
 
 /**
  * @property int $id
@@ -28,17 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class Link extends Model
 {
     /** @use HasFactory<LinkFactory> */
-    use HasFactory;
-
-    /**
-     * Get the user that owns the link.
-     *
-     * @return BelongsTo<User, covariant $this>
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
+    use HasFactory, LogsActivityTrait;
 
     /**
      * The attributes that should be cast.
@@ -53,5 +45,24 @@ final class Link extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the user that owns the link.
+     *
+     * @return BelongsTo<User, covariant $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function customLogOptions(LogOptions $options): LogOptions
+    {
+        return $options
+            ->dontLogIfAttributesChangedOnly(['click_count']);
     }
 }
