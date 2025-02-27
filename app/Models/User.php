@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Traits\LogsActivityTrait;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Spatie\Activitylog\LogOptions;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -39,7 +41,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 final class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, Notifiable;
+    use HasFactory, HasRoles, LogsActivityTrait, Notifiable;
 
     /**
      * The attributes that should be hidden for serialization.
@@ -49,6 +51,23 @@ final class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'password' => 'hashed',
+            'views' => 'integer',
+            'avatar_updated_at' => 'datetime',
+            'email_verified_at' => 'datetime',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
 
     /**
      * Get the user's links.
@@ -81,20 +100,13 @@ final class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * {@inheritDoc}
      */
-    protected function casts(): array
+    protected function customLogOptions(LogOptions $options): LogOptions
     {
-        return [
-            'password' => 'hashed',
-            'views' => 'integer',
-            'avatar_updated_at' => 'datetime',
-            'email_verified_at' => 'datetime',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-        ];
+        return $options
+            ->logExcept(['password'])
+            ->dontLogIfAttributesChangedOnly(['views']);
     }
 
     /**

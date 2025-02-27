@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\User;
 
+use App\Actions\Subscription\DeleteUserAction;
+use App\Actions\User\UpdateUserAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\DeleteUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
+use App\Http\Resources\GenericResponseResource;
 use App\Http\Resources\ProfileResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Arr;
 
 /**
- * TODO: $user->sendEmailVerificationNotification(); should be done similar to register user in case new email is set - for the places like update etc.
- *
  * @class UserController
  */
 final readonly class UserController extends Controller
@@ -43,30 +43,19 @@ final readonly class UserController extends Controller
      *
      * @param UpdateUserRequest $request
      * @param User $user
+     * @param UpdateUserAction $updateUserAction
      *
      * @return ProfileResource
      */
-    public function update(UpdateUserRequest $request, User $user): ProfileResource
-    {
-        $validatedRequest = $request->validated();
+    public function update(
+        UpdateUserRequest $request,
+        User $user,
+        UpdateUserAction $updateUserAction
+    ): ProfileResource {
+        $response = $updateUserAction->handle($request, $user);
 
-        // If the email is being changed, reset verification.
-        if ($request->has('email') && $user->email !== $request->input('email')) {
-            $validatedRequest = array_merge($validatedRequest, ['email_verified_at' => null]);
-        }
-
-        // Update the user with the validated data.
-        $user->update($validatedRequest);
-
-        // Invalidate the old token.
-        JWTAuth::parseToken()->invalidate(true);
-        // Generate a new token for the updated user.
-        $token = JWTAuth::fromUser($user);
-
-        // Load the user links and updated user.
-        $user = $user->fresh()?->load('links');
-
-        return (new ProfileResource($user))->additional(['token' => $token]);
+        return (new ProfileResource(Arr::get($response, 'user')))
+            ->additional(['token' => Arr::get($response, 'token')]);
     }
 
     /**
@@ -74,26 +63,22 @@ final readonly class UserController extends Controller
      *
      * @param DeleteUserRequest $_
      * @param User $user
+     * @param DeleteUserAction $deleteUserAction
      *
-     * @return JsonResponse
+     * @return GenericResponseResource
      */
-    public function delete(DeleteUserRequest $_, User $user): JsonResponse
-    {
-        // Invalidate the token if it exists.
-        if (JWTAuth::getToken()) {
-            JWTAuth::parseToken()->invalidate(true);
-        }
+    public function delete(
+        DeleteUserRequest $_,
+        User $user,
+        DeleteUserAction $deleteUserAction
+    ): GenericResponseResource {
+        $deleteUserAction->handle($user);
 
-        // Delete the user.
-        $user->delete();
-
-        return response()->json(['message' => 'User deleted successfully!']);
+        return new GenericResponseResource('User deleted successfully!');
     }
 
     /**
-     * Get the authenticated user including the links relation.
-     *
-     * TODO: other relations will be added to ProfileResource resource - and eager loading such as settings etc.
+     * Get the authenticated user including the link's relation.
      *
      * @return ProfileResource
      */

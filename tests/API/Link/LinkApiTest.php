@@ -138,7 +138,9 @@ class LinkApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Link deleted successfully!',
+                'data' => [
+                    'message' => 'Link deleted successfully!',
+                ],
             ]);
     }
 
@@ -172,7 +174,9 @@ class LinkApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Link updated successfully!',
+                'data' => [
+                    'message' => 'Link updated successfully!',
+                ],
             ]);
     }
 
@@ -207,7 +211,9 @@ class LinkApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Link updated successfully!',
+                'data' => [
+                    'message' => 'Link updated successfully!',
+                ],
             ]);
         $modifiedLink = Link::query()->where('id', Arr::get($link->json(), 'data.id'))->first();
         $this->assertEquals(0, $modifiedLink->click_count);

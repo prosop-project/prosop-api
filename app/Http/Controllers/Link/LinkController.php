@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Link;
 
+use App\Actions\Link\CreateLinkAction;
+use App\Actions\Link\DeleteLinkAction;
+use App\Actions\Link\UpdateLinkAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Link\CreateLinkRequest;
 use App\Http\Requests\Link\DeleteLinkRequest;
 use App\Http\Requests\Link\UpdateLinkRequest;
+use App\Http\Resources\GenericResponseResource;
 use App\Http\Resources\LinkResource;
 use App\Models\Link;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
 
 /**
  * @class LinkController
@@ -23,18 +26,16 @@ final readonly class LinkController extends Controller
      *
      * @param CreateLinkRequest $request
      * @param User $user
+     * @param CreateLinkAction $createLinkAction
      *
      * @return LinkResource
      */
-    public function create(CreateLinkRequest $request, User $user): LinkResource
-    {
-        $link = Link::query()->create([
-            'user_id' => $user->id,
-            'type' => $request->type,
-            'description' => $request->description,
-            'value' => $request->value,
-            'is_visible' => $request->is_visible,
-        ]);
+    public function create(
+        CreateLinkRequest $request,
+        User $user,
+        CreateLinkAction $createLinkAction
+    ): LinkResource {
+        $link = $createLinkAction->handle($request, $user);
 
         return new LinkResource($link);
     }
@@ -44,15 +45,18 @@ final readonly class LinkController extends Controller
      *
      * @param DeleteLinkRequest $_
      * @param Link $link
+     * @param DeleteLinkAction $deleteLinkAction
      *
-     * @return JsonResponse
+     * @return GenericResponseResource
      */
-    public function delete(DeleteLinkRequest $_, Link $link): JsonResponse
-    {
-        // Delete the link.
-        $link->delete();
+    public function delete(
+        DeleteLinkRequest $_,
+        Link $link,
+        DeleteLinkAction $deleteLinkAction
+    ): GenericResponseResource {
+        $deleteLinkAction->handle($link);
 
-        return response()->json(['message' => 'Link deleted successfully!']);
+        return new GenericResponseResource('Link deleted successfully!');
     }
 
     /**
@@ -60,20 +64,17 @@ final readonly class LinkController extends Controller
      *
      * @param UpdateLinkRequest $request
      * @param Link $link
+     * @param UpdateLinkAction $updateLinkAction
      *
-     * @return JsonResponse
+     * @return GenericResponseResource
      */
-    public function update(UpdateLinkRequest $request, Link $link): JsonResponse
-    {
-        $validatedRequest = $request->validated();
+    public function update(
+        UpdateLinkRequest $request,
+        Link $link,
+        UpdateLinkAction $updateLinkAction
+    ): GenericResponseResource {
+        $updateLinkAction->handle($request, $link);
 
-        // If the link value is being changed, then reset the click count.
-        if ($request->has('value') && $link->value !== $request->input('value')) {
-            $validatedRequest = array_merge($validatedRequest, ['click_count' => 0]);
-        }
-
-        $link->update($validatedRequest);
-
-        return response()->json(['message' => 'Link updated successfully!']);
+        return new GenericResponseResource('Link updated successfully!');
     }
 }

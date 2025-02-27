@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\ActivityLog\ActivityLogController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Link\LinkController;
 use App\Http\Controllers\Permission\PermissionController;
@@ -23,38 +24,50 @@ Route::prefix('auth')->name('auth.')->group(function() {
 
 /*
  | ---------------------------------------------------------
- | Endpoints for managing permissions, roles and user roles.
+ | Endpoints for admin users only.
  | ---------------------------------------------------------
  */
-Route::middleware(['auth:api', ValidateUserIsAdmin::class])->prefix('permissions')->name('permissions.')->group(function () {
+Route::middleware(['auth:api', ValidateUserIsAdmin::class])->group(function () {
     /*
-     * Endpoints for managing permissions crud operations.
+     | ---------------------------------------------------------
+     | Endpoints for managing permissions, roles and user roles.
+     | ---------------------------------------------------------
      */
-    Route::get('/list', [PermissionController::class, 'permissions'])->name('list.permissions');
-    Route::post('/create_permission', [PermissionController::class, 'createPermission'])->name('create.permission');
-    Route::delete('/delete_permission/{permission}', [PermissionController::class, 'deletePermission'])->name('delete.permission');
-    Route::patch('/update_permission/{permission}', [PermissionController::class, 'updatePermission'])->name('update.permission');
+    Route::prefix('permissions')->name('permissions.')->group(function () {
+        /*
+         * Endpoints for managing permissions crud operations.
+         */
+        Route::get('/list', [PermissionController::class, 'permissions'])->name('list.permissions');
+        Route::post('/create_permission', [PermissionController::class, 'createPermission'])->name('create.permission');
+        Route::delete('/delete_permission/{permission}', [PermissionController::class, 'deletePermission'])->name('delete.permission');
+        Route::patch('/update_permission/{permission}', [PermissionController::class, 'updatePermission'])->name('update.permission');
 
-    /*
-     * Endpoints for managing roles crud operations.
-     */
-    Route::get('/roles', [PermissionController::class, 'roles'])->name('list.roles');
-    Route::post('/create_role', [PermissionController::class, 'createRole'])->name('create.role');
-    Route::delete('/delete_role/{role}', [PermissionController::class, 'deleteRole'])->name('delete.role');
-    Route::patch('/update_role/{role}', [PermissionController::class, 'updateRole'])->name('update.role');
+        /*
+         * Endpoints for managing roles crud operations.
+         */
+        Route::get('/roles', [PermissionController::class, 'roles'])->name('list.roles');
+        Route::post('/create_role', [PermissionController::class, 'createRole'])->name('create.role');
+        Route::delete('/delete_role/{role}', [PermissionController::class, 'deleteRole'])->name('delete.role');
+        Route::patch('/update_role/{role}', [PermissionController::class, 'updateRole'])->name('update.role');
 
-    /*
-     * Endpoint to grant permission to role.
-     */
-    Route::post('/role/{role}/permission/{permission}', [PermissionController::class, 'grantPermissionToRole'])->name('grant.permission');
+        /*
+         * Endpoint to grant permission to role.
+         */
+        Route::post('/role/{role}/permission/{permission}', [PermissionController::class, 'grantPermissionToRole'])->name('grant.permission');
 
-    /*
-     * Endpoint to assign and revoke role to user.
-     */
-    Route::prefix('users')->name('users.')->group(function () {
-        Route::post('/{user}/assign_role', [PermissionController::class, 'assignRole'])->name('assign.role');
-        Route::delete('/{user}/remove_role', [PermissionController::class, 'removeRole'])->name('remove.role');
+        /*
+         * Endpoint to assign and revoke role to user.
+         */
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::post('/{user}/assign_role', [PermissionController::class, 'assignRole'])->name('assign.role');
+            Route::delete('/{user}/remove_role', [PermissionController::class, 'removeRole'])->name('remove.role');
+        });
     });
+
+    /*
+     * Endpoint for cleaning activity log records.
+     */
+    Route::delete('/activity_log/clean', ActivityLogController::class)->name('activity_log.clean');
 });
 
 /*

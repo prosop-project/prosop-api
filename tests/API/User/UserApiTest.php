@@ -159,7 +159,9 @@ class UserApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'User deleted successfully!',
+                'data' => [
+                    'message' => 'User deleted successfully!',
+                ]
             ]);
     }
 
