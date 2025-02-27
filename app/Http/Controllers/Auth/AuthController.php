@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\Auth\LoginAction;
+use App\Actions\Auth\RegisterUserAction;
 use App\Data\UserTokenData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Resources\GenericResponseResource;
 use App\Http\Resources\UserTokenResource;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**
@@ -24,34 +24,13 @@ final readonly class AuthController extends Controller
      * Register a new user and return the token.
      *
      * @param RegisterRequest $request
+     * @param RegisterUserAction $registerUserAction
      *
      * @return JsonResponse
      */
-    public function register(RegisterRequest $request): JsonResponse
+    public function register(RegisterRequest $request, RegisterUserAction $registerUserAction): JsonResponse
     {
-        $user = User::query()->create([
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'name' => $request->name,
-            'description' => $request->description,
-            'email' => $request->email,
-        ]);
-
-        // TODO:  event(new Registered($user)); and SendEmailVerificationNotification can be set in case email is set,
-
-        $token = JWTAuth::fromUser($user);
-
-        // Login the user who just registered.
-        Auth::login($user);
-
-        // TODO: update user avatar job can be added here and other places after implemented UpdateUserAvatar::dispatch($user);
-
-        // Set the user token data.
-        $userTokenData = new UserTokenData(
-            user: $user,
-            message: 'User registered successfully!',
-            token: $token
-        );
+        $userTokenData = $registerUserAction->handle($request);
 
         return $this->respondWithToken(
             userTokenData: $userTokenData,
@@ -63,10 +42,11 @@ final readonly class AuthController extends Controller
      * Login the user with username and password, and return the token.
      *
      * @param LoginRequest $request
+     * @param LoginAction $loginAction
      *
      * @return JsonResponse
      */
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request, LoginAction $loginAction): JsonResponse
     {
         // Check if the user is already authenticated.
         if (($token = JWTAuth::getToken()) && ($user = JWTAuth::authenticate())) {
@@ -89,14 +69,8 @@ final readonly class AuthController extends Controller
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
 
-        // Get the authenticated user.
-        $user = Auth::getUser();
-
-        $userTokenData = new UserTokenData(
-            user: $user,
-            message: 'Login successful!',
-            token: $token,
-        );
+        // Handle the login action.
+        $userTokenData = $loginAction->handle($token);
 
         return $this->respondWithToken($userTokenData);
     }
@@ -104,16 +78,16 @@ final readonly class AuthController extends Controller
     /**
      * Logout the authenticated user.
      *
-     * @return JsonResponse
+     * @return GenericResponseResource
      */
-    public function logout(): JsonResponse
+    public function logout(): GenericResponseResource
     {
         // Invalidate the token if it exists.
         if (JWTAuth::getToken()) {
             JWTAuth::parseToken()->invalidate(true);
         }
 
-        return response()->json(['message' => 'Successfully logged out!']);
+        return new GenericResponseResource('Successfully logged out!');
     }
 
     /**

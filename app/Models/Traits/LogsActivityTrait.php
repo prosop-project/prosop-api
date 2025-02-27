@@ -18,6 +18,7 @@ trait LogsActivityTrait
 
     /**
      * The events that should be logged for the model - created, updated, deleted as default.
+     * (That comes from the spatie laravel-activitylog package)
      *
      * @var string[]
      */
@@ -54,9 +55,20 @@ trait LogsActivityTrait
     private function defaultLogOptions(): LogOptions
     {
         return LogOptions::defaults()
+            ->setDescriptionForEvent(fn(string $eventName) => class_basename($this) . " is {$eventName}!")
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->useLogName(class_basename($this) . '_model_log');
+            ->useLogName($this->getLogName());
+    }
+
+    /**
+     * Returns the log name for the model by combining the base class name with the model activity suffix.
+     *
+     * @return string
+     */
+    private function getLogName(): string
+    {
+        return class_basename($this) . '_model_activity';
     }
 }

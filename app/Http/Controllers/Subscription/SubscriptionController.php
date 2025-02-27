@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Subscription;
 
+use App\Actions\Subscription\CreateSubscriptionAction;
+use App\Actions\Subscription\DeleteSubscriptionAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Subscription\SubscribeRequest;
+use App\Http\Resources\GenericResponseResource;
 use App\Http\Resources\SubscriptionResource;
 use App\Models\Subscription;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
@@ -22,15 +24,16 @@ final readonly class SubscriptionController extends Controller
      *
      * @param SubscribeRequest $_
      * @param User $user
+     * @param CreateSubscriptionAction $createSubscriptionAction
      *
      * @return SubscriptionResource
      */
-    public function subscribe(SubscribeRequest $_, User $user): SubscriptionResource
-    {
-        $subscription = Subscription::query()->create([
-            'user_id' => $user->id,
-            'subscriber_id' => auth()->id(),
-        ]);
+    public function subscribe(
+        SubscribeRequest $_,
+        User $user,
+        CreateSubscriptionAction $createSubscriptionAction
+    ): SubscriptionResource {
+        $subscription = $createSubscriptionAction->handle($user);
 
         return new SubscriptionResource($subscription);
     }
@@ -39,18 +42,17 @@ final readonly class SubscriptionController extends Controller
      * Delete subscription (unsubscribe authenticated user to provided user)
      *
      * @param User $user
+     * @param DeleteSubscriptionAction $deleteSubscriptionAction
      *
-     * @return JsonResponse
+     * @return GenericResponseResource
      */
-    public function unsubscribe(User $user): JsonResponse
-    {
-        Subscription::query()
-            ->where(['subscriber_id' => auth()->id()])
-            ->where(['user_id' => $user->id])
-            ->firstOrFail()
-            ->delete();
+    public function unsubscribe(
+        User $user,
+        DeleteSubscriptionAction $deleteSubscriptionAction
+    ): GenericResponseResource {
+        $deleteSubscriptionAction->handle($user);
 
-        return response()->json(['message' => 'Subscription is removed successfully!']);
+        return new GenericResponseResource('Subscription is removed successfully!');
     }
 
     /**

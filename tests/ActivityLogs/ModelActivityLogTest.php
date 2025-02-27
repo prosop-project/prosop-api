@@ -2,6 +2,8 @@
 
 namespace Tests\ActivityLogs;
 
+use App\Enums\ActivityEvent;
+use App\Enums\ActivityLogName;
 use App\Models\Link;
 use App\Models\Subscription;
 use App\Models\User;
@@ -47,10 +49,11 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'Link_model_log',
+            'log_name' => 'Link_model_activity',
+            'description' => 'Link is created!',
             'subject_id' => $link->id,
             'subject_type' => Link::class,
-            'description' => 'created',
+            'event' => 'created',
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->type' => $type,
@@ -80,10 +83,11 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'Link_model_log',
+            'log_name' => 'Link_model_activity',
+            'description' => 'Link is updated!',
             'subject_id' => $link->id,
             'subject_type' => Link::class,
-            'description' => 'updated',
+            'event' => 'updated',
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->description' => $newDescription,
@@ -109,10 +113,11 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'Link_model_log',
+            'log_name' => 'Link_model_activity',
+            'description' => 'Link is deleted!',
             'subject_id' => $link->id,
             'subject_type' => Link::class,
-            'description' => 'deleted',
+            'event' => 'deleted',
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->old->type' => $type,
@@ -140,10 +145,10 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseMissing('activity_log', [
-            'log_name' => 'Link_model_log',
+            'log_name' => 'Link_model_activity',
             'subject_id' => $link->id,
             'subject_type' => Link::class,
-            'description' => 'updated',
+            'event' => 'updated',
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->type' => $type,
@@ -173,10 +178,11 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'User_model_log',
+            'log_name' => 'User_model_activity',
+            'description' => 'User is created!',
             'subject_id' => $newUser->id,
             'subject_type' => User::class,
-            'description' => 'created',
+            'event' => 'created',
             'properties->attributes->username' => $username,
             'properties->attributes->email' => $email,
             'properties->attributes->views' => $views,
@@ -208,10 +214,11 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'User_model_log',
+            'log_name' => 'User_model_activity',
+            'description' => 'User is updated!',
             'subject_id' => $newUser->id,
             'subject_type' => User::class,
-            'description' => 'updated',
+            'event' => 'updated',
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->username' => $newUsername,
@@ -241,10 +248,10 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseMissing('activity_log', [
-            'log_name' => 'User_model_log',
+            'log_name' => 'User_model_activity',
             'subject_id' => $newUser->id,
             'subject_type' => User::class,
-            'description' => 'updated',
+            'event' => 'updated',
             'properties->attributes->username' => $username,
             'properties->attributes->email' => $email,
             'properties->attributes->views' => 1,
@@ -271,10 +278,10 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseMissing('activity_log', [
-            'log_name' => 'User_model_log',
+            'log_name' => 'User_model_activity',
             'subject_id' => $newUser->id,
             'subject_type' => User::class,
-            'description' => 'created',
+            'event' => 'created',
             'properties->attributes->username' => $username,
             'properties->attributes->email' => $email,
             'properties->attributes->views' => $views,
@@ -302,10 +309,11 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'User_model_log',
+            'log_name' => 'User_model_activity',
+            'description' => 'User is deleted!',
             'subject_id' => $newUser->id,
             'subject_type' => User::class,
-            'description' => 'deleted',
+            'event' => 'deleted',
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->old->username' => $username,
@@ -327,10 +335,11 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'Subscription_model_log',
+            'log_name' => 'Subscription_model_activity',
+            'description' => 'Subscription is created!',
             'subject_id' => $subscription->id,
             'subject_type' => Subscription::class,
-            'description' => 'created',
+            'event' => 'created',
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->user_id' => $newUser->id,
@@ -358,10 +367,10 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'Subscription_model_log',
+            'log_name' => 'Subscription_model_activity',
             'subject_id' => $subscription->id,
             'subject_type' => Subscription::class,
-            'description' => 'deleted',
+            'description' => 'Subscription is deleted!',
             'event' => 'deleted',
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
@@ -383,7 +392,41 @@ class ModelActivityLogTest extends TestCase
             'value' => $value,
         ]);
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'Link_model_log',
+            'log_name' => 'Link_model_activity',
+            'description' => 'Link is created!',
+            'subject_id' => $link->id,
+            'subject_type' => Link::class,
+            'event' => 'created',
+            'causer_id' => $this->user->id,
+            'causer_type' => User::class,
+            'properties->attributes->type' => $type,
+            'properties->attributes->description' => $description,
+            'properties->attributes->value' => $value,
+        ]);
+        $role = Role::query()->create(['name' => 'admin']);
+        $this->user->assignRole($role->name);
+        $days = 30;
+        $logName = 'Link_model_activity';
+        $parameters = [
+            'log_name' => $logName,
+            'days' => $days,
+        ];
+        $activity = Activity::query()->where('log_name', $logName)->first();
+        $activity->update(['created_at' => now()->subDays(50)]);
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->token,
+        ])->deleteJson(route('activity_log.clean', $parameters));
+
+        /* ASSERT */
+        $response->assertJson([
+            'data' => [
+                'message' => 'Activity log is cleaned!'
+            ]
+        ]);
+        $this->assertDatabaseMissing('activity_log', [
+            'log_name' => 'Link_model_activity',
             'subject_id' => $link->id,
             'subject_type' => Link::class,
             'description' => 'created',
@@ -393,32 +436,14 @@ class ModelActivityLogTest extends TestCase
             'properties->attributes->description' => $description,
             'properties->attributes->value' => $value,
         ]);
-        $role = Role::query()->create(['name' => 'admin']);
-        $this->user->assignRole($role->name);
-        $parameters = [
-            'log_name' => 'Link_model_log',
-            'days' => 30,
-        ];
-        $activity = Activity::query()->where('log_name', 'Link_model_log')->first();
-        $activity->update(['created_at' => now()->subDays(50)]);
-
-        /* EXECUTE */
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $this->token,
-        ])->deleteJson(route('activity_log.clean', $parameters));
-
-        /* ASSERT */
-        $response->assertJson(['message' => 'Activity log is cleaned!']);
-        $this->assertDatabaseMissing('activity_log', [
-            'log_name' => 'Link_model_log',
-            'subject_id' => $link->id,
-            'subject_type' => Link::class,
-            'description' => 'created',
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => ActivityLogName::ACTIVITYLOG_CLEAN_COMMAND_ACTIVITY->value,
+            'description' => 'Activity log is cleaned!',
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
-            'properties->attributes->type' => $type,
-            'properties->attributes->description' => $description,
-            'properties->attributes->value' => $value,
+            'event' => ActivityEvent::ACTIVITYLOG_CLEAN_COMMAND->value,
+            'properties->days' => $days,
+            'properties->log_name' => $logName,
         ]);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Tests\API\Permission;
 
+use App\Enums\ActivityEvent;
+use App\Enums\ActivityLogName;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\Test;
@@ -47,6 +49,16 @@ class PermissionApiTest extends TestCase
                     'name' => $newPermission['name'],
                 ]
             ]);
+        $permission = Permission::query()->first();
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => ActivityLogName::PERMISSION_MODEL_ACTIVITY->value,
+            'description' => 'Permission is created!',
+            'subject_type' => Permission::class,
+            'subject_id' => $permission->id,
+            'event' => ActivityEvent::CREATED->value,
+            'causer_type' => User::class,
+            'causer_id' => $this->user->id,
+        ]);
     }
 
     #[Test]
@@ -69,9 +81,20 @@ class PermissionApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Permission updated successfully!',
+                'data' => [
+                    'message' => 'Permission updated successfully!',
+                ]
             ]);
         $this->assertEquals($newPermission['name'], Permission::query()->find($oldPermission->id)?->name);
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => ActivityLogName::PERMISSION_MODEL_ACTIVITY->value,
+            'description' => 'Permission is updated!',
+            'subject_type' => Permission::class,
+            'subject_id' => $oldPermission->id,
+            'event' => ActivityEvent::UPDATED->value,
+            'causer_type' => User::class,
+            'causer_id' => $this->user->id,
+        ]);
     }
 
     #[Test]
@@ -93,7 +116,9 @@ class PermissionApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Permission deleted successfully!',
+                'data' => [
+                    'message' => 'Permission deleted successfully!',
+                ]
             ]);
         $this->assertNull(Permission::query()->find($permission->id));
     }
@@ -180,6 +205,16 @@ class PermissionApiTest extends TestCase
                     'name' => $newRole['name'],
                 ]
             ]);
+        $role = Role::query()->first();
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => ActivityLogName::ROLE_MODEL_ACTIVITY->value,
+            'description' => 'Role is created!',
+            'subject_type' => Role::class,
+            'subject_id' => $role->id,
+            'event' => ActivityEvent::CREATED->value,
+            'causer_type' => User::class,
+            'causer_id' => $this->user->id,
+        ]);
     }
 
     #[Test]
@@ -202,9 +237,20 @@ class PermissionApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Role updated successfully!',
+                'data' => [
+                    'message' => 'Role updated successfully!',
+                ]
             ]);
         $this->assertEquals($newRole['name'], Role::query()->find($oldRole->id)?->name);
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => ActivityLogName::ROLE_MODEL_ACTIVITY->value,
+            'description' => 'Role is updated!',
+            'subject_type' => Role::class,
+            'subject_id' => $oldRole->id,
+            'event' => ActivityEvent::UPDATED->value,
+            'causer_type' => User::class,
+            'causer_id' => $this->user->id,
+        ]);
     }
 
     #[Test]
@@ -226,9 +272,20 @@ class PermissionApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Role deleted successfully!',
+                'data' => [
+                    'message' => 'Role deleted successfully!',
+                ]
             ]);
         $this->assertNull(Role::query()->find($role->id));
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => ActivityLogName::ROLE_MODEL_ACTIVITY->value,
+            'description' => 'Role is deleted!',
+            'subject_type' => Role::class,
+            'subject_id' => $role->id,
+            'event' => ActivityEvent::DELETED->value,
+            'causer_type' => User::class,
+            'causer_id' => $this->user->id,
+        ]);
     }
 
     #[Test]
@@ -290,12 +347,23 @@ class PermissionApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Role assigned successfully!',
+                'data' => [
+                    'message' => 'Role assigned to the user successfully!',
+                ]
             ]);
         $this->assertEquals(
             ['test_role_0'],
             $this->user->getRoleNames()->toArray()
         );
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => ActivityLogName::ASSIGN_ROLE_TO_USER_ACTIVITY->value,
+            'description' => 'Role assigned to the user!',
+            'subject_type' => User::class,
+            'event' => ActivityEvent::CREATED->value,
+            'causer_type' => User::class,
+            'properties->role' => $firstRole['name'],
+            'properties->user->id' => $this->user->id,
+        ]);
     }
 
     #[Test]
@@ -345,12 +413,23 @@ class PermissionApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Role removed successfully!',
+                'data' => [
+                    'message' => 'Role removed from the user successfully!',
+                ]
             ]);
         $this->assertEquals(
             ['test_role_1'],
             $this->user->refresh()->getRoleNames()->toArray()
         );
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => ActivityLogName::REMOVE_ROLE_FROM_USER_ACTIVITY->value,
+            'description' => 'Role removed from the user!',
+            'subject_type' => User::class,
+            'subject_id' => $this->user->id,
+            'event' => ActivityEvent::DELETED->value,
+            'causer_type' => User::class,
+            'causer_id' => $this->user->id,
+        ]);
     }
 
     #[Test]
@@ -382,12 +461,24 @@ class PermissionApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Permission granted to role successfully!',
+                'data' => [
+                    'message' => 'Permission granted to the role successfully!',
+                ]
             ]);
+        $role = Role::query()->first();
         $this->assertEquals(
             ['test_permission'],
-            Role::query()->first()->permissions()->get()->pluck('name')->toArray()
+            $role->permissions()->get()->pluck('name')->toArray()
         );
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => ActivityLogName::GRANT_PERMISSION_TO_ROLE_ACTIVITY->value,
+            'description' => 'Permission is granted to the role!',
+            'subject_type' => Role::class,
+            'subject_id' => $role->id,
+            'event' => ActivityEvent::CREATED->value,
+            'causer_type' => User::class,
+            'causer_id' => $this->user->id,
+        ]);
     }
 
     #[Test]
@@ -415,7 +506,9 @@ class PermissionApiTest extends TestCase
         ])->postJson(route('permissions.grant.permission', $parameters));
         $response->assertOk()
             ->assertJson([
-                'message' => 'Permission granted to role successfully!',
+                'data' => [
+                    'message' => 'Permission granted to the role successfully!',
+                ]
             ]);
         $this->assertEquals(
             ['test_permission'],
@@ -434,9 +527,13 @@ class PermissionApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Permission deleted successfully!',
+                'data' => [
+                    'message' => 'Permission deleted successfully!',
+                ]
             ]);
         $this->assertEmpty(Role::query()->first()->refresh()->permissions()->get()->pluck('name')->toArray());
         $this->assertNull(Permission::query()->find($permissionId));
     }
 }
+
+// todo addtionla activity logging tests are missing, i have test for automated model activity log, but this login etc activities need test

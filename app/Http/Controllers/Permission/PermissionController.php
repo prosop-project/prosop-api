@@ -4,13 +4,22 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Permission;
 
+use App\Actions\Permission\AssignRoleToUserAction;
+use App\Actions\Permission\CreatePermissionAction;
+use App\Actions\Permission\CreateRoleAction;
+use App\Actions\Permission\DeletePermissionAction;
+use App\Actions\Permission\DeleteRoleAction;
+use App\Actions\Permission\GrantPermissionToRoleAction;
+use App\Actions\Permission\RemoveRoleFromUserAction;
+use App\Actions\Permission\UpdatePermissionAction;
+use App\Actions\Permission\UpdateRoleAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Permission\AssignOrRemoveRoleRequest;
 use App\Http\Requests\Permission\PermissionRequest;
 use App\Http\Requests\Permission\RoleRequest;
+use App\Http\Resources\GenericResponseResource;
 use App\Http\Resources\RolePermissionResource;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -30,14 +39,15 @@ final readonly class PermissionController extends Controller
      * Create a new permission.
      *
      * @param PermissionRequest $request
+     * @param CreatePermissionAction $createPermissionAction
      *
      * @return RolePermissionResource
      */
-    public function createPermission(PermissionRequest $request): RolePermissionResource
-    {
-        $permission = Permission::query()->create([
-            'name' => $request->name,
-        ]);
+    public function createPermission(
+        PermissionRequest $request,
+        CreatePermissionAction $createPermissionAction
+    ): RolePermissionResource {
+        $permission = $createPermissionAction->handle($request);
 
         return new RolePermissionResource($permission);
     }
@@ -56,15 +66,17 @@ final readonly class PermissionController extends Controller
      * Delete a permission.
      *
      * @param Permission $permission
+     * @param DeletePermissionAction $deletePermissionAction
      *
-     * @return JsonResponse
+     * @return GenericResponseResource
      */
-    public function deletePermission(Permission $permission): JsonResponse
-    {
-        // Delete the permission.
-        $permission->delete();
+    public function deletePermission(
+        Permission $permission,
+        DeletePermissionAction $deletePermissionAction
+    ): GenericResponseResource {
+        $deletePermissionAction->handle($permission);
 
-        return response()->json(['message' => 'Permission deleted successfully!']);
+        return new GenericResponseResource('Permission deleted successfully!');
     }
 
     /**
@@ -72,14 +84,18 @@ final readonly class PermissionController extends Controller
      *
      * @param PermissionRequest $request
      * @param Permission $permission
+     * @param UpdatePermissionAction $updatePermissionAction
      *
-     * @return JsonResponse
+     * @return GenericResponseResource
      */
-    public function updatePermission(PermissionRequest $request, Permission $permission): JsonResponse
-    {
-        $permission->update($request->validated());
+    public function updatePermission(
+        PermissionRequest $request,
+        Permission $permission,
+        UpdatePermissionAction $updatePermissionAction
+    ): GenericResponseResource {
+        $updatePermissionAction->handle($request, $permission);
 
-        return response()->json(['message' => 'Permission updated successfully!']);
+        return new GenericResponseResource('Permission updated successfully!');
     }
 
     /*
@@ -92,12 +108,15 @@ final readonly class PermissionController extends Controller
      * Create a new role.
      *
      * @param RoleRequest $request
+     * @param CreateRoleAction $createRoleAction
      *
      * @return RolePermissionResource
      */
-    public function createRole(RoleRequest $request): RolePermissionResource
-    {
-        $role = Role::query()->create($request->validated());
+    public function createRole(
+        RoleRequest $request,
+        CreateRoleAction $createRoleAction
+    ): RolePermissionResource {
+        $role = $createRoleAction->handle($request);
 
         return new RolePermissionResource($role);
     }
@@ -107,29 +126,33 @@ final readonly class PermissionController extends Controller
      *
      * @param RoleRequest $request
      * @param Role $role
+     * @param UpdateRoleAction $updateRoleAction
      *
-     * @return JsonResponse
+     * @return GenericResponseResource
      */
-    public function updateRole(RoleRequest $request, Role $role): JsonResponse
-    {
-        $role->update($request->validated());
+    public function updateRole(
+        RoleRequest $request,
+        Role $role,
+        UpdateRoleAction $updateRoleAction
+    ): GenericResponseResource {
+        $updateRoleAction->handle($request, $role);
 
-        return response()->json(['message' => 'Role updated successfully!']);
+        return new GenericResponseResource('Role updated successfully!');
     }
 
     /**
      * Delete a role.
      *
      * @param Role $role
+     * @param DeleteRoleAction $deleteRoleAction
      *
-     * @return JsonResponse
+     * @return GenericResponseResource
      */
-    public function deleteRole(Role $role): JsonResponse
+    public function deleteRole(Role $role, DeleteRoleAction $deleteRoleAction): GenericResponseResource
     {
-        // Delete the role.
-        $role->delete();
+        $deleteRoleAction->handle($role);
 
-        return response()->json(['message' => 'Role deleted successfully!']);
+        return new GenericResponseResource('Role deleted successfully!');
     }
 
     /**
@@ -153,14 +176,18 @@ final readonly class PermissionController extends Controller
      *
      * @param Role $role
      * @param Permission $permission
+     * @param GrantPermissionToRoleAction $grantPermissionToRoleAction
      *
-     * @return JsonResponse
+     * @return GenericResponseResource
      */
-    public function grantPermissionToRole(Role $role, Permission $permission): JsonResponse
-    {
-        $role->givePermissionTo($permission);
+    public function grantPermissionToRole(
+        Role $role,
+        Permission $permission,
+        GrantPermissionToRoleAction $grantPermissionToRoleAction
+    ): GenericResponseResource {
+        $grantPermissionToRoleAction->handle($role, $permission);
 
-        return response()->json(['message' => 'Permission granted to role successfully!']);
+        return new GenericResponseResource('Permission granted to the role successfully!');
     }
 
     /*
@@ -174,14 +201,18 @@ final readonly class PermissionController extends Controller
      *
      * @param AssignOrRemoveRoleRequest $request
      * @param User $user
+     * @param AssignRoleToUserAction $assignRoleToUserAction
      *
-     * @return JsonResponse
+     * @return GenericResponseResource
      */
-    public function assignRole(AssignOrRemoveRoleRequest $request, User $user): JsonResponse
-    {
-        $user->assignRole($request->validated('role'));
+    public function assignRole(
+        AssignOrRemoveRoleRequest $request,
+        User $user,
+        AssignRoleToUserAction $assignRoleToUserAction
+    ): GenericResponseResource {
+        $assignRoleToUserAction->handle($request, $user);
 
-        return response()->json(['message' => 'Role assigned successfully!']);
+        return new GenericResponseResource('Role assigned to the user successfully!');
     }
 
     /**
@@ -189,13 +220,17 @@ final readonly class PermissionController extends Controller
      *
      * @param AssignOrRemoveRoleRequest $request
      * @param User $user
+     * @param RemoveRoleFromUserAction $removeRoleFromUserAction
      *
-     * @return JsonResponse
+     * @return GenericResponseResource
      */
-    public function removeRole(AssignOrRemoveRoleRequest $request, User $user): JsonResponse
-    {
-        $user->removeRole($request->validated('role'));
+    public function removeRole(
+        AssignOrRemoveRoleRequest $request,
+        User $user,
+        RemoveRoleFromUserAction $removeRoleFromUserAction
+    ): GenericResponseResource {
+        $removeRoleFromUserAction->handle($request, $user);
 
-        return response()->json(['message' => 'Role removed successfully!']);
+        return new GenericResponseResource('Role removed from the user successfully!');
     }
 }

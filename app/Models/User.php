@@ -41,7 +41,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 final class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, Notifiable, LogsActivityTrait;
+    use HasFactory, HasRoles, LogsActivityTrait, Notifiable;
 
     /**
      * The attributes that should be hidden for serialization.

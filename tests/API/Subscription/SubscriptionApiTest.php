@@ -94,7 +94,9 @@ class SubscriptionApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Subscription is removed successfully!',
+                'data' => [
+                    'message' => 'Subscription is removed successfully!',
+                ]
             ]);
         $this->assertDatabaseMissing('subscriptions', [
             'user_id' => $parameters['user'],

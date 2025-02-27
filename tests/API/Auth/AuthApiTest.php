@@ -2,6 +2,9 @@
 
 namespace Tests\API\Auth;
 
+use App\Enums\ActivityEvent;
+use App\Enums\ActivityLogName;
+use App\Models\User;
 use Illuminate\Support\Arr;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -98,10 +101,17 @@ class AuthApiTest extends TestCase
                     'token' => Arr::get($response, 'data.token')
                 ],
             ]);
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => ActivityLogName::LOGIN_USER_ACTIVITY->value,
+            'description' => 'User is logged in!',
+            'event' => ActivityEvent::LOGIN->value,
+            'causer_type' => User::class,
+            'causer_id' => auth()->id(),
+        ]);
     }
 
     #[Test]
-    public function it_tests_login_request_validatin_required_for_username_and_password()
+    public function it_tests_login_request_validation_required_for_username_and_password()
     {
         /* SETUP */
         $username = fake()->userName;
@@ -153,7 +163,9 @@ class AuthApiTest extends TestCase
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
-                'message' => 'Successfully logged out!',
+                'data' => [
+                    'message' => 'Successfully logged out!',
+                ],
             ]);
     }
 }
