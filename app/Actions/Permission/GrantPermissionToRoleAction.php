@@ -17,7 +17,7 @@ final readonly class GrantPermissionToRoleAction
     /**
      * @param GrantPermissionToRoleActivityService $activityService
      */
-    public function __construct(protected GrantPermissionToRoleActivityService $activityService) {}
+    public function __construct(private GrantPermissionToRoleActivityService $activityService) {}
 
     /**
      * Handle the action.

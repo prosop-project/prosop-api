@@ -16,7 +16,7 @@ final readonly class DeleteRoleAction
     /**
      * @param DeleteRoleModelActivityService $activityService
      */
-    public function __construct(protected DeleteRoleModelActivityService $activityService) {}
+    public function __construct(private DeleteRoleModelActivityService $activityService) {}
 
     /**
      * Handle the action.

@@ -28,7 +28,7 @@ final class RegisterRequest extends BaseRequest
     {
         return [
             'name' => ['nullable', 'string', 'max:50'],
-            'username' => ['required', 'string', 'max:50', 'unique:users,username', new Username],
+            'username' => ['required', 'string', 'min:3', 'max:50', 'unique:users,username', new Username],
             'description' => ['nullable', 'string', 'max:255'],
             'password' => ['required', 'string', Password::defaults()],
             'email' => ['nullable', 'string', 'email', 'max:255', 'unique:users,email'],

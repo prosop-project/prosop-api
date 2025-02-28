@@ -17,7 +17,7 @@ final readonly class UpdatePermissionAction
     /**
      * @param UpdatePermissionModelActivityService $activityService
      */
-    public function __construct(protected UpdatePermissionModelActivityService $activityService) {}
+    public function __construct(private UpdatePermissionModelActivityService $activityService) {}
 
     /**
      * Handle the action.

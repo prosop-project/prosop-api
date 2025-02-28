@@ -16,7 +16,7 @@ final readonly class DeletePermissionAction
     /**
      * @param DeletePermissionModelActivityService $activityService
      */
-    public function __construct(protected DeletePermissionModelActivityService $activityService) {}
+    public function __construct(private DeletePermissionModelActivityService $activityService) {}
 
     /**
      * Handle the action.
