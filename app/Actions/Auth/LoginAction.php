@@ -16,7 +16,7 @@ final readonly class LoginAction
     /**
      * @param LoginUserActivityService $activityService
      */
-    public function __construct(protected LoginUserActivityService $activityService) {}
+    public function __construct(private LoginUserActivityService $activityService) {}
 
     /**
      * Handle the action.

@@ -16,7 +16,7 @@ final readonly class DeleteActivityLogAction
     /**
      * @param ActivitylogCleanCommandActivityService $activityService
      */
-    public function __construct(protected ActivitylogCleanCommandActivityService $activityService) {}
+    public function __construct(private ActivitylogCleanCommandActivityService $activityService) {}
 
     /**
      * Handle the action.

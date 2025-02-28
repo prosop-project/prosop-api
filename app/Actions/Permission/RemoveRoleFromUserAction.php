@@ -17,7 +17,7 @@ final readonly class RemoveRoleFromUserAction
     /**
      * @param RemoveRoleFromUserActivityService $activityService
      */
-    public function __construct(protected RemoveRoleFromUserActivityService $activityService) {}
+    public function __construct(private RemoveRoleFromUserActivityService $activityService) {}
 
     /**
      * Handle the action.

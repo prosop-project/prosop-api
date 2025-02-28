@@ -17,7 +17,7 @@ final readonly class CreateRoleAction
     /**
      * @param CreateRoleModelActivityService $activityService
      */
-    public function __construct(protected CreateRoleModelActivityService $activityService) {}
+    public function __construct(private CreateRoleModelActivityService $activityService) {}
 
     /**
      * Handle the action.

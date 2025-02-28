@@ -17,7 +17,7 @@ final readonly class CreatePermissionAction
     /**
      * @param CreatePermissionModelActivityService $activityService
      */
-    public function __construct(protected CreatePermissionModelActivityService $activityService) {}
+    public function __construct(private CreatePermissionModelActivityService $activityService) {}
 
     /**
      * Handle the action.

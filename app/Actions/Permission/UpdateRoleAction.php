@@ -17,7 +17,7 @@ final readonly class UpdateRoleAction
     /**
      * @param UpdateRoleModelActivityService $activityService
      */
-    public function __construct(protected UpdateRoleModelActivityService $activityService) {}
+    public function __construct(private UpdateRoleModelActivityService $activityService) {}
 
     /**
      * Handle the action.

@@ -18,8 +18,8 @@ use Spatie\LaravelData\Data;
 final class UserTokenData extends Data
 {
     public function __construct(
-        public mixed $user,
-        public ?string $message = null,
-        public mixed $token = null,
+        public readonly mixed $user,
+        public readonly ?string $message = null,
+        public readonly mixed $token = null,
     ) {}
 }

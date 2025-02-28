@@ -17,7 +17,7 @@ final readonly class AssignRoleToUserAction
     /**
      * @param AssignRoleToUserActivityService $activityService
      */
-    public function __construct(protected AssignRoleToUserActivityService $activityService) {}
+    public function __construct(private AssignRoleToUserActivityService $activityService) {}
 
     /**
      * Handle the action.
