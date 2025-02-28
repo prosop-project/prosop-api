@@ -168,4 +168,31 @@ class AuthApiTest extends TestCase
                 ],
             ]);
     }
+
+    #[Test]
+    public function it_tests_throttle_for_login_request()
+    {
+        /* SETUP */
+        $username = fake()->userName;
+        $password = fake()->password(8, 32);
+        $newUser = [
+            'name' => fake()->name,
+            'username' => $username,
+            'description' => fake()->sentence,
+            'password' => $password,
+            'email' => fake()->email,
+        ];
+        $this->postJson(route('auth.register', $newUser));
+        $existingUser = [];
+
+        /* EXECUTE */
+        $this->postJson(route('auth.login', $existingUser));
+        $this->postJson(route('auth.login', $existingUser));
+        $this->postJson(route('auth.login', $existingUser));
+        $this->postJson(route('auth.login', $existingUser));
+        $response = $this->postJson(route('auth.login', $existingUser));
+
+        /* ASSERT */
+        $response->assertTooManyRequests();
+    }
 }

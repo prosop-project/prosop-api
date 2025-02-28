@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
  | Endpoints for managing user authentication.
  | -------------------------------------------
  */
-Route::prefix('auth')->name('auth.')->group(function() {
+Route::middleware(['throttle:5,1'])->prefix('auth')->name('auth.')->group(function() {
     Route::post('/register', [AuthController::class, 'register'])->name('register');
     Route::post('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
