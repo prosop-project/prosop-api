@@ -11,7 +11,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @property array<int, string> $collection_ids
  * @property array<int, string> $face_model_versions
  * @property string|null $next_token
- *
  */
 final class ListExternalCollectionResource extends JsonResource
 {

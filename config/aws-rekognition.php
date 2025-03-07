@@ -13,7 +13,7 @@ return [
     |
     */
     'credentials' => [
-        'key'    => env('AWS_ACCESS_KEY_ID'),
+        'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
     ],
 
@@ -25,7 +25,7 @@ return [
     | Here you may specify the region to connect to.
     | See https://docs.aws.amazon.com/general/latest/gr/rande.html for a list of available regions.
     */
-    'region'      => env('AWS_REGION', 'us-east-1'),
+    'region' => env('AWS_REGION', 'us-east-1'),
 
     /*
     |--------------------------------------------------------------------------
@@ -35,5 +35,5 @@ return [
     | Here you may specify the version of the webservice.
     | See https://docs.aws.amazon.com/aws-sdk-php/v3/api/class-Aws.AwsClient.html#method___construct for more information.
     */
-    'version'     => env('AWS_VERSION', 'latest'),
+    'version' => env('AWS_VERSION', 'latest'),
 ];
