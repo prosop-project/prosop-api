@@ -6,6 +6,7 @@ use App\Http\Controllers\ActivityLog\ActivityLogController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Link\LinkController;
 use App\Http\Controllers\Permission\PermissionController;
+use App\Http\Controllers\Recognition\AwsRekognitionController;
 use App\Http\Controllers\Subscription\SubscriptionController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Middleware\ValidateUserIsAdmin;
@@ -109,4 +110,18 @@ Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
 
     Route::get('/{user}', [SubscriptionController::class, 'subscriptions'])->name('list');
     Route::get('/{user}/subscribers', [SubscriptionController::class, 'subscribers'])->name('subscribers');
+});
+
+/*
+ |--------------------------------------
+ | Endpoints for recognition operations.
+ |--------------------------------------
+ */
+Route::prefix('recognition')->name('recognition.')->group(function () {
+    Route::middleware(['auth:api', ValidateUserIsAdmin::class])->group(function () {
+        Route::post('/create_collection', [AwsRekognitionController::class, 'createCollection'])->name('create.collection');
+        Route::get('/external/list_collections', [AwsRekognitionController::class, 'listExternalCollections'])->name('external.list.collections');
+        Route::get('/aws_collections', [AwsRekognitionController::class, 'getAwsCollections'])->name('aws.collections');
+        Route::delete('/delete_collection/{collection}', [AwsRekognitionController::class, 'deleteCollection'])->name('delete.collection');
+    });
 });

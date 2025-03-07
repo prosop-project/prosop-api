@@ -412,7 +412,7 @@ class ModelActivityLogTest extends TestCase
             'days' => $days,
         ];
         $activity = Activity::query()->where('log_name', $logName)->first();
-        $activity->update(['created_at' => now()->subDays(50)]);
+        $activity->update(['created_at' => $this->now->subDays(50)]);
 
         /* EXECUTE */
         $response = $this->withHeaders([

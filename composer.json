@@ -8,6 +8,7 @@
         "php": "^8.2",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.10",
+        "moe-mizrak/aws-rekognition": "^1.0",
         "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-data": "^4.13",
         "spatie/laravel-permission": "^6.13",
