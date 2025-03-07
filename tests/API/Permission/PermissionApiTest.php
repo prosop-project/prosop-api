@@ -535,5 +535,3 @@ class PermissionApiTest extends TestCase
         $this->assertNull(Permission::query()->find($permissionId));
     }
 }
-
-// todo addtionla activity logging tests are missing, i have test for automated model activity log, but this login etc activities need test
