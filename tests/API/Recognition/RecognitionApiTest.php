@@ -3,6 +3,7 @@
 namespace Tests\API\Recognition;
 
 use App\Models\AwsCollection;
+use App\Models\AwsUser;
 use App\Models\User;
 use Aws\Rekognition\RekognitionClient;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -55,10 +56,10 @@ class RecognitionApiTest extends TestCase
     {
         /* SETUP */
         $parameters = [
-            'collection_id' => 'test_collection_id_0',
+            'external_collection_id' => 'test_collection_id_0',
         ];
         $faceModelVersion = '7.0';
-        $externalCollectionArn = 'aws:rekognition:us-east-1:605134457385:collection/' . $parameters['collection_id'];
+        $externalCollectionArn = 'aws:rekognition:us-east-1:605134457385:collection/' . $parameters['external_collection_id'];
         $methodName = 'createCollection';
         $this->mockRekognitionClient($methodName);
 
@@ -71,7 +72,7 @@ class RecognitionApiTest extends TestCase
         $response->assertCreated()
             ->assertJson([
                 'data' => [
-                    'external_collection_id' => $parameters['collection_id'],
+                    'external_collection_id' => $parameters['external_collection_id'],
                     'external_collection_arn' => $externalCollectionArn,
                     'face_model_version' => $faceModelVersion,
                 ]
@@ -84,7 +85,7 @@ class RecognitionApiTest extends TestCase
             'event' => 'created',
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
-            'properties->attributes->external_collection_id' => $parameters['collection_id'],
+            'properties->attributes->external_collection_id' => $parameters['external_collection_id'],
             'properties->attributes->external_collection_arn' => $externalCollectionArn,
             'properties->attributes->face_model_version' => $faceModelVersion,
         ]);
@@ -129,7 +130,7 @@ class RecognitionApiTest extends TestCase
         /* EXECUTE */
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->deleteJson(route('recognition.delete.collection', ['collection' => $awsCollection->id]));
+        ])->deleteJson(route('recognition.delete.collection', ['awsCollection' => $awsCollection->id]));
 
         /* ASSERT */
         $response->assertOk()
@@ -149,6 +150,137 @@ class RecognitionApiTest extends TestCase
             'properties->old->external_collection_id' => $awsCollection->external_collection_id,
             'properties->old->external_collection_arn' => $awsCollection->external_collection_arn,
             'properties->old->face_model_version' => $awsCollection->face_model_version,
+            ]);
+    }
+
+    #[Test]
+    public function it_tests_create_aws_user_request()
+    {
+        /* SETUP */
+        $awsCollection = AwsCollection::factory()->create();
+        $parameters = [
+            'aws_collection_id' => $awsCollection->id,
+            'user_id' => $this->user->id,
+        ];
+        $methodName = 'createUser';
+        $this->mockRekognitionClient($methodName);
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->token,
+        ])->postJson(route('recognition.create.aws.user', $parameters));
+
+        /* ASSERT */
+        $externalUserId = config('aws-rekognition.reference_prefix') . '-' . $parameters['user_id'];
+        $response->assertCreated()
+            ->assertJson([
+                'data' => [
+                    'user_id' => $parameters['user_id'],
+                    'aws_collection_id' => $parameters['aws_collection_id'],
+                    'external_user_id' => $externalUserId,
+                ]
+            ]);
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'AwsUser_model_activity',
+            'description' => 'AwsUser is created!',
+            'subject_id' => AwsUser::query()->first()->id,
+            'subject_type' => AwsUser::class,
+            'event' => 'created',
+            'causer_id' => $this->user->id,
+            'causer_type' => User::class,
+            'properties->attributes->user_id' => $parameters['user_id'],
+            'properties->attributes->aws_collection_id' => $parameters['aws_collection_id'],
+            'properties->attributes->external_user_id' => $externalUserId,
+        ]);
+    }
+
+    #[Test]
+    public function it_tests_delete_aws_user_request()
+    {
+        /* SETUP */
+        $externalUserId = config('aws-rekognition.reference_prefix') . '-' . $this->user->id;
+        $awsCollection = AwsCollection::factory()->create();
+        $awsUser = AwsUser::factory()->create([
+            'user_id' => $this->user->id,
+            'aws_collection_id' => $awsCollection->id,
+            'external_user_id' => $externalUserId,
+        ]);
+        $parameters = [
+            'aws_collection_id' => $awsCollection->id,
+            'user_id' => $this->user->id,
+        ];
+        $methodName = 'deleteUser';
+        $this->mockRekognitionClient($methodName);
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->token,
+        ])->deleteJson(route('recognition.delete.aws.user', $parameters));
+
+        /* ASSERT */
+        $response->assertOk()
+            ->assertJson([
+                'data' => [
+                    'message' => 'Aws user is deleted from both database and aws side successfully!',
+                ],
+            ]);
+        $this->assertDatabaseMissing('aws_users', [
+            'id' => $awsUser->id,
+        ]);
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'AwsUser_model_activity',
+            'description' => 'AwsUser is deleted!',
+            'subject_id' => $awsUser->id,
+            'subject_type' => AwsUser::class,
+            'event' => 'deleted',
+            'causer_id' => $this->user->id,
+            'causer_type' => User::class,
+            'properties->old->user_id' => $parameters['user_id'],
+            'properties->old->aws_collection_id' => $parameters['aws_collection_id'],
+            'properties->old->external_user_id' => $externalUserId,
+        ]);
+    }
+
+    #[Test]
+    public function it_tests_get_aws_users_request()
+    {
+        /* SETUP */
+        $awsCollection = AwsCollection::factory()->create();
+        $firstUser = User::factory()->create();
+        $externalUserId = config('aws-rekognition.reference_prefix') . '-' . $firstUser->id;
+        AwsUser::factory()->create([
+            'user_id' => $firstUser->id,
+            'external_user_id' => $externalUserId,
+            'aws_collection_id' => $awsCollection->id,
+        ]);
+        $secondUser = User::factory()->create();
+        $secondExternalUserId = config('aws-rekognition.reference_prefix') . '-' . $secondUser->id;
+        AwsUser::factory()->create([
+            'user_id' => $secondUser->id,
+            'external_user_id' => $secondExternalUserId,
+            'aws_collection_id' => $awsCollection->id,
+        ]);
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->token,
+        ])->getJson(route('recognition.aws.users'));
+
+        /* ASSERT */
+        $response->assertOk()
+            ->assertJson([
+                'data' => [
+                    [
+                        'user_id' => $firstUser->id,
+                        'aws_collection_id' => $awsCollection->id,
+                        'external_user_id' => $externalUserId,
+                    ],
+                    [
+                        'user_id' => $secondUser->id,
+                        'aws_collection_id' => $awsCollection->id,
+                        'external_user_id' => $secondExternalUserId,
+                    ],
+                ]
             ]);
     }
 }

@@ -14,12 +14,12 @@ final readonly class DeleteCollectionAction
     /**
      * Handle the action.
      *
-     * @param AwsCollection $collection
+     * @param AwsCollection $awsCollection
      *
      * @return void
      */
-    public function handle(AwsCollection $collection): void
+    public function handle(AwsCollection $awsCollection): void
     {
-        $collection->delete();
+        $awsCollection->delete();
     }
 }

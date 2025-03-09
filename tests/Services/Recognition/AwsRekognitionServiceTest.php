@@ -2,15 +2,16 @@
 
 namespace Tests\Services\Recognition;
 
+use App\Models\AwsCollection;
 use App\Services\Recognition\AwsRekognitionService;
 use Aws\Rekognition\RekognitionClient;
 use Mockery\MockInterface;
 use MoeMizrak\Rekognition\Data\ResultData\DeleteCollectionResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListCollectionsResultData;
+use MoeMizrak\Rekognition\Data\ResultData\ListUsersResultData;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Tests\TestSupport\MockRekognitionTrait;
-
 
 class AwsRekognitionServiceTest extends TestCase
 {
@@ -63,7 +64,7 @@ class AwsRekognitionServiceTest extends TestCase
         /* SETUP */
         $collectionId = 'test_collection_id_0';
         $validatedRequest = [
-            'collection_id' => $collectionId,
+            'external_collection_id' => $collectionId,
         ];
         $methodName = 'createCollection';
         $this->mockRekognitionClient($methodName);
@@ -124,5 +125,67 @@ class AwsRekognitionServiceTest extends TestCase
             $response
         );
         $this->assertEquals(200, $response->statusCode);
+    }
+
+    #[Test]
+    public function it_tests_aws_rekognition_create_user_request()
+    {
+        /* SETUP */
+        $awsCollection = AwsCollection::factory()->create();
+        $validatedRequest = [
+            'aws_collection_id' => $awsCollection->id,
+            'external_user_id' => 'test_user_id',
+        ];
+        $methodName = 'createUser';
+        $this->mockRekognitionClient($methodName);
+
+        /* EXECUTE */
+        $response = $this->awsRekognitionService->createUser($validatedRequest);
+
+        /* ASSERT */
+        $this->metaDataAssertions($response);
+    }
+
+    #[Test]
+    public function it_tests_aws_rekognition_delete_user_request()
+    {
+        /* SETUP */
+        $awsCollection = AwsCollection::factory()->create();
+        $validatedRequest = [
+            'aws_collection_id' => $awsCollection->id,
+            'external_user_id' => 'test_user_id',
+        ];
+        $methodName = 'deleteUser';
+        $this->mockRekognitionClient($methodName);
+
+        /* EXECUTE */
+        $response = $this->awsRekognitionService->deleteUser($validatedRequest);
+
+        /* ASSERT */
+        $this->metaDataAssertions($response);
+    }
+
+    #[Test]
+    public function it_tests_aws_rekognition_list_aws_users_request()
+    {
+        /* SETUP */
+        $awsCollection = AwsCollection::factory()->create();
+        $validatedRequest = [
+            'aws_collection_id' => $awsCollection->id,
+            'max_results' => 20,
+        ];
+        $methodName = 'listUsers';
+        $this->mockRekognitionClient($methodName);
+
+        /* EXECUTE */
+        $response = $this->awsRekognitionService->listExternalAwsUsers($validatedRequest);
+
+        /* ASSERT */
+        $this->metaDataAssertions($response);
+        $this->assertInstanceOf(
+            ListUsersResultData::class,
+            $response
+        );
+        $this->assertNotNull($response->users);
     }
 }

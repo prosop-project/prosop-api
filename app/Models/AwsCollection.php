@@ -7,8 +7,10 @@ namespace App\Models;
 use App\Models\Traits\LogsActivityTrait;
 use Carbon\Carbon;
 use Database\Factories\AwsCollectionFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -18,6 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $face_model_version
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ *
+ * @property-read Collection<int, AwsUser> $awsUsers
  *
  * @class AwsCollection
  */
@@ -38,5 +42,15 @@ final class AwsCollection extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the AWS users that belong to this AWS collection.
+     *
+     * @return HasMany<AwsUser, covariant $this>
+     */
+    public function awsUsers(): HasMany
+    {
+        return $this->hasMany(AwsUser::class);
     }
 }

@@ -7,14 +7,14 @@ namespace App\Http\Requests\Recognition;
 use App\Http\Requests\BaseRequest;
 
 /**
- * CreateCollectionsRequest is the form request that handles the validation of the create collection request to AWS Rekognition.
+ * CreateCollectionRequest is the form request that handles the validation of the create collection request to AWS Rekognition.
  *
- * @property string $collection_id
+ * @property string $external_collection_id
  * @property array<string, mixed>|null $tags
  *
- * @class CreateCollectionsRequest
+ * @class CreateCollectionRequest
  */
-final class CreateCollectionsRequest extends BaseRequest
+final class CreateCollectionRequest extends BaseRequest
 {
     /**
      * {@inheritDoc}
@@ -22,7 +22,7 @@ final class CreateCollectionsRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'collection_id' => ['required', 'string'],
+            'external_collection_id' => ['required', 'string'],
             'tags' => ['sometimes', 'nullable', 'array'],
         ];
     }

@@ -122,6 +122,17 @@ Route::prefix('recognition')->name('recognition.')->group(function () {
         Route::post('/create_collection', [AwsRekognitionController::class, 'createCollection'])->name('create.collection');
         Route::get('/external/list_collections', [AwsRekognitionController::class, 'listExternalCollections'])->name('external.list.collections');
         Route::get('/aws_collections', [AwsRekognitionController::class, 'getAwsCollections'])->name('aws.collections');
-        Route::delete('/delete_collection/{collection}', [AwsRekognitionController::class, 'deleteCollection'])->name('delete.collection');
+        Route::delete('/delete_collection/{awsCollection}', [AwsRekognitionController::class, 'deleteCollection'])->name('delete.collection');
+    });
+
+    Route::middleware(['auth:api'])->group(function () {
+        Route::post('/create_aws_user', [AwsRekognitionController::class, 'createAwsUser'])->name('create.aws.user');
+        Route::delete('/delete_aws_user', [AwsRekognitionController::class, 'deleteAwsUser'])->name('delete.aws.user');
+
+        // Getting aws users (both database aws_users and AWS Rekognition side users) is only allowed for admin users.
+        Route::middleware(ValidateUserIsAdmin::class)->group(function () {
+            Route::get('/aws_users', [AwsRekognitionController::class, 'getAwsUsers'])->name('aws.users');
+            Route::get('external/list_aws_users', [AwsRekognitionController::class, 'listExternalAwsUsers'])->name('external.list.users');
+        });
     });
 });

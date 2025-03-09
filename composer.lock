@@ -3252,16 +3252,16 @@
         },
         {
             "name": "moe-mizrak/aws-rekognition",
-            "version": "v1.0.0",
+            "version": "v1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/moe-mizrak/aws-rekognition.git",
-                "reference": "87840470f4e0996d080887c8b2ce3d5df8131c24"
+                "reference": "62985f99ad63299e304b13c6cbdab68d06ef3766"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/moe-mizrak/aws-rekognition/zipball/87840470f4e0996d080887c8b2ce3d5df8131c24",
-                "reference": "87840470f4e0996d080887c8b2ce3d5df8131c24",
+                "url": "https://api.github.com/repos/moe-mizrak/aws-rekognition/zipball/62985f99ad63299e304b13c6cbdab68d06ef3766",
+                "reference": "62985f99ad63299e304b13c6cbdab68d06ef3766",
                 "shasum": ""
             },
             "require": {
@@ -3313,9 +3313,9 @@
             ],
             "support": {
                 "issues": "https://github.com/moe-mizrak/aws-rekognition/issues",
-                "source": "https://github.com/moe-mizrak/aws-rekognition/tree/v1.0.0"
+                "source": "https://github.com/moe-mizrak/aws-rekognition/tree/v1.0.2"
             },
-            "time": "2025-01-28T23:37:32+00:00"
+            "time": "2025-03-08T19:14:54+00:00"
         },
         {
             "name": "monolog/monolog",
