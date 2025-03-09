@@ -9,8 +9,8 @@ use App\Actions\Recognition\CreateCollectionAction;
 use App\Actions\Recognition\DeleteAwsUserAction;
 use App\Actions\Recognition\DeleteCollectionAction;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Recognition\CreateOrDeleteAwsUserRequest;
 use App\Http\Requests\Recognition\CreateCollectionRequest;
+use App\Http\Requests\Recognition\CreateOrDeleteAwsUserRequest;
 use App\Http\Requests\Recognition\ListExternalCollectionsRequest;
 use App\Http\Requests\Recognition\ListExternalUsersRequest;
 use App\Http\Resources\AwsCollectionResource;
@@ -43,7 +43,7 @@ final readonly class AwsRekognitionController extends Controller
      */
     public function createCollection(
         CreateCollectionRequest $request,
-        CreateCollectionAction  $createCollectionAction
+        CreateCollectionAction $createCollectionAction
     ): AwsCollectionResource {
         // Create a new collection in AWS Rekognition by sending a request to AWS Rekognition API.
         $awsResponse = $this->awsRekognitionService->createCollection($request->validated());
