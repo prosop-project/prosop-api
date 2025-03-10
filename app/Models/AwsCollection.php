@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon|null $updated_at
  *
  * @property-read Collection<int, AwsUser> $awsUsers
+ * @property-read Collection<int, AwsFace> $awsFaces
  *
  * @class AwsCollection
  */
@@ -52,5 +53,15 @@ final class AwsCollection extends Model
     public function awsUsers(): HasMany
     {
         return $this->hasMany(AwsUser::class);
+    }
+
+    /**
+     * Get the AWS faces that belong to this AWS collection.
+     *
+     * @return HasMany<AwsFace, covariant $this>
+     */
+    public function awsFaces(): HasMany
+    {
+        return $this->hasMany(AwsFace::class);
     }
 }

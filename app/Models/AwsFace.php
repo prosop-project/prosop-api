@@ -6,31 +6,32 @@ namespace App\Models;
 
 use App\Models\Traits\LogsActivityTrait;
 use Carbon\Carbon;
-use Database\Factories\AwsUserFactory;
-use Illuminate\Database\Eloquent\Collection;
+use Database\Factories\AwsFaceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
- * @property int $user_id
+ * @property int|null $user_id
+ * @property int|null $aws_user_id
  * @property int $aws_collection_id
- * @property string $external_user_id
- * @property string|null $external_user_status
+ * @property string $external_face_id
+ * @property float $confidence
+ * @property string|null $external_image_id
+ * @property string $image_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
  * @property-read User $user
+ * @property-read AwsUser $awsUser
  * @property-read AwsCollection $awsCollection
- * @property-read Collection<int, AwsFace> $awsFaces
  *
- * @class AwsUser
+ * @class AwsFace
  */
-final class AwsUser extends Model
+final class AwsFace extends Model
 {
-    /** @use HasFactory<AwsUserFactory> */
+    /** @use HasFactory<AwsFaceFactory> */
     use HasFactory, LogsActivityTrait;
 
     /**
@@ -41,6 +42,9 @@ final class AwsUser extends Model
     public function casts(): array
     {
         return [
+            'external_face_id' => 'uuid',
+            'image_id' => 'uuid',
+            'confidence' => 'decimal',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -57,22 +61,22 @@ final class AwsUser extends Model
     }
 
     /**
-     * Get the AWS collection that this AWS user belongs to.
+     * Get the AWS user that this AWS face belongs to.
+     *
+     * @return BelongsTo<AwsUser, covariant $this>
+     */
+    public function awsUser(): BelongsTo
+    {
+        return $this->belongsTo(AwsUser::class);
+    }
+
+    /**
+     * Get the AWS collection that this AWS face belongs to.
      *
      * @return BelongsTo<AwsCollection, covariant $this>
      */
     public function awsCollection(): BelongsTo
     {
         return $this->belongsTo(AwsCollection::class);
-    }
-
-    /**
-     * Get the AWS faces that belong to this AWS user.
-     *
-     * @return HasMany<AwsFace, covariant $this>
-     */
-    public function awsFaces(): HasMany
-    {
-        return $this->hasMany(AwsFace::class);
     }
 }

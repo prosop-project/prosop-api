@@ -35,6 +35,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property-read Collection<int, Subscription> $subscriptions
  * @property-read Collection<int, Subscription> $subscribers
  * @property-read Collection<int, AwsUser> $awsUsers
+ * @property-read Collection<int, AwsFace> $awsFaces
  * @property-read Collection<int, Role> $roles
  *
  * @class User
@@ -101,13 +102,23 @@ final class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * User has many aws users.
+     * Get the user's AWS users (User has many AWS users).
      *
      * @return HasMany<AwsUser, covariant $this>
      */
     public function awsUsers(): HasMany
     {
         return $this->hasMany(AwsUser::class);
+    }
+
+    /**
+     * Get the user's aws faces (User has many AWS faces).
+     *
+     * @return HasMany<AwsFace, covariant $this>
+     */
+    public function awsFaces(): HasMany
+    {
+        return $this->hasMany(AwsFace::class);
     }
 
     /**
