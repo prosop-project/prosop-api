@@ -118,6 +118,9 @@ Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
  |--------------------------------------
  */
 Route::prefix('recognition')->name('recognition.')->group(function () {
+    /*
+     * Endpoints for managing aws collections.
+     */
     Route::middleware(['auth:api', ValidateUserIsAdmin::class])->group(function () {
         Route::post('/create_collection', [AwsRekognitionController::class, 'createCollection'])->name('create.collection');
         Route::get('/external/list_collections', [AwsRekognitionController::class, 'listExternalCollections'])->name('external.list.collections');
@@ -125,6 +128,9 @@ Route::prefix('recognition')->name('recognition.')->group(function () {
         Route::delete('/delete_collection/{awsCollection}', [AwsRekognitionController::class, 'deleteCollection'])->name('delete.collection');
     });
 
+    /*
+     * Endpoints for managing aws users.
+     */
     Route::middleware(['auth:api'])->group(function () {
         Route::post('/create_aws_user', [AwsRekognitionController::class, 'createAwsUser'])->name('create.aws.user');
         Route::delete('/delete_aws_user', [AwsRekognitionController::class, 'deleteAwsUser'])->name('delete.aws.user');
@@ -134,5 +140,12 @@ Route::prefix('recognition')->name('recognition.')->group(function () {
             Route::get('/aws_users', [AwsRekognitionController::class, 'getAwsUsers'])->name('aws.users');
             Route::get('external/list_aws_users', [AwsRekognitionController::class, 'listExternalAwsUsers'])->name('external.list.users');
         });
+    });
+
+    /*
+     * Endpoints for managing aws faces.
+     */
+    Route::middleware(['auth:api'])->group(function () {
+        Route::post('/process_faces/{user}', [AwsRekognitionController::class, 'processFaces'])->name('process.faces');
     });
 });

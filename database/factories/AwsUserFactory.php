@@ -39,7 +39,7 @@ final class AwsUserFactory extends Factory
         return [
             'user_id' => $user->id,
             'aws_collection_id' => AwsCollection::factory(),
-            'external_user_id' => config('aws-rekognition.reference_prefix') . '-' . $user->id,
+            'external_user_id' => generate_external_id($user->id),
         ];
     }
 }

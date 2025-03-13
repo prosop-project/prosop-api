@@ -2,14 +2,21 @@
 
 namespace Tests\Services\Recognition;
 
+use App\Jobs\IndexFacesJob;
 use App\Models\AwsCollection;
+use App\Models\User;
 use App\Services\Recognition\AwsRekognitionService;
 use Aws\Rekognition\RekognitionClient;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Mockery\MockInterface;
+use MoeMizrak\Rekognition\Data\ResultData\AssociateFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\DeleteCollectionResultData;
+use MoeMizrak\Rekognition\Data\ResultData\IndexFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListCollectionsResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListUsersResultData;
 use PHPUnit\Framework\Attributes\Test;
+use Spatie\LaravelData\DataCollection;
 use Tests\TestCase;
 use Tests\TestSupport\MockRekognitionTrait;
 
@@ -187,5 +194,79 @@ class AwsRekognitionServiceTest extends TestCase
             $response
         );
         $this->assertNotNull($response->users);
+    }
+
+    #[Test]
+    public function it_tests_aws_rekognition_index_faces_request()
+    {
+        /* SETUP */
+        $externalCollectionId = 'test_collection_id';
+        $image = UploadedFile::fake()->image('test_image.jpg');
+        $user = User::factory()->create();
+        $methodName = 'indexFaces';
+        $this->mockRekognitionClient($methodName);
+
+        /* EXECUTE */
+        $response = $this->awsRekognitionService->indexFaces($externalCollectionId, $image, $user);
+
+        /* ASSERT */
+        $this->metaDataAssertions($response);
+        $this->assertInstanceOf(
+            IndexFacesResultData::class,
+            $response
+        );
+        $this->assertNotNull($response->faceModelVersion);
+        $this->assertNotNull($response->faceRecords);
+        $this->assertInstanceOf(DataCollection::class, $response->faceRecords);
+        $this->assertNotNull($response->unindexedFaces);
+        $this->assertInstanceOf(DataCollection::class, $response->unindexedFaces);
+    }
+
+    #[Test]
+    public function it_tests_aws_rekognition_associate_faces_request()
+    {
+        /* SETUP */
+        $methodName = 'associateFaces';
+        $this->mockRekognitionClient($methodName);
+        $externalCollectionId = 'test_collection_id';
+        $externalUserId = 'test_user_id';
+        $externalFaceIds = ['8e2ad714-4d23-43c0-b9ad-9fab136bef13', 'ed49afb4-b45b-468e-9614-d652c924cd4a'];
+
+        /* EXECUTE */
+        $response = $this->awsRekognitionService->associateFaces($externalCollectionId, $externalFaceIds, $externalUserId);
+
+        /* ASSERT */
+        $this->metaDataAssertions($response);
+        $this->assertInstanceOf(
+            AssociateFacesResultData::class,
+            $response
+        );
+        $this->assertNotNull($response->associatedFaces);
+        $this->assertInstanceOf(DataCollection::class, $response->associatedFaces);
+        $this->assertNotNull($response->unsuccessfulFaceAssociations);
+        $this->assertInstanceOf(DataCollection::class, $response->unsuccessfulFaceAssociations);
+        $this->assertEquals("UPDATING", $response->userStatus);
+    }
+
+    #[Test]
+    public function it_tests_process_faces_request()
+    {
+        /* SETUP */
+        Queue::fake();
+        $user = User::factory()->create();
+        $awsCollection = AwsCollection::factory()->create();
+        $validatedRequest = [
+            'aws_collection_id' => $awsCollection->id,
+            'images' => [
+                UploadedFile::fake()->image('test_image.jpg'),
+                UploadedFile::fake()->image('test_image_2.jpg'),
+            ],
+        ];
+
+        /* EXECUTE */
+        $this->awsRekognitionService->processFaces($validatedRequest, $user);
+
+        /* ASSERT */
+        Queue::assertPushed(IndexFacesJob::class);
     }
 }

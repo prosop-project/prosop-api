@@ -2,12 +2,16 @@
 
 namespace Tests\API\Recognition;
 
+use App\Enums\ActivityEvent;
+use App\Jobs\IndexFacesJob;
 use App\Models\AwsCollection;
 use App\Models\AwsUser;
 use App\Models\User;
 use Aws\Rekognition\RekognitionClient;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Queue;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -82,7 +86,7 @@ class RecognitionApiTest extends TestCase
             'description' => 'AwsCollection is created!',
             'subject_id' => AwsCollection::query()->first()->id,
             'subject_type' => AwsCollection::class,
-            'event' => 'created',
+            'event' => ActivityEvent::CREATED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->external_collection_id' => $parameters['external_collection_id'],
@@ -144,7 +148,7 @@ class RecognitionApiTest extends TestCase
             'description' => 'AwsCollection is deleted!',
             'subject_id' => $awsCollection->id,
             'subject_type' => AwsCollection::class,
-            'event' => 'deleted',
+            'event' => ActivityEvent::DELETED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->old->external_collection_id' => $awsCollection->external_collection_id,
@@ -171,7 +175,7 @@ class RecognitionApiTest extends TestCase
         ])->postJson(route('recognition.create.aws.user', $parameters));
 
         /* ASSERT */
-        $externalUserId = config('aws-rekognition.reference_prefix') . '-' . $parameters['user_id'];
+        $externalUserId = generate_external_id($parameters['user_id']);
         $response->assertCreated()
             ->assertJson([
                 'data' => [
@@ -185,7 +189,7 @@ class RecognitionApiTest extends TestCase
             'description' => 'AwsUser is created!',
             'subject_id' => AwsUser::query()->first()->id,
             'subject_type' => AwsUser::class,
-            'event' => 'created',
+            'event' => ActivityEvent::CREATED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->user_id' => $parameters['user_id'],
@@ -198,7 +202,7 @@ class RecognitionApiTest extends TestCase
     public function it_tests_delete_aws_user_request()
     {
         /* SETUP */
-        $externalUserId = config('aws-rekognition.reference_prefix') . '-' . $this->user->id;
+        $externalUserId = generate_external_id($this->user->id);
         $awsCollection = AwsCollection::factory()->create();
         $awsUser = AwsUser::factory()->create([
             'user_id' => $this->user->id,
@@ -232,7 +236,7 @@ class RecognitionApiTest extends TestCase
             'description' => 'AwsUser is deleted!',
             'subject_id' => $awsUser->id,
             'subject_type' => AwsUser::class,
-            'event' => 'deleted',
+            'event' => ActivityEvent::DELETED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->old->user_id' => $parameters['user_id'],
@@ -247,14 +251,14 @@ class RecognitionApiTest extends TestCase
         /* SETUP */
         $awsCollection = AwsCollection::factory()->create();
         $firstUser = User::factory()->create();
-        $externalUserId = config('aws-rekognition.reference_prefix') . '-' . $firstUser->id;
+        $externalUserId = generate_external_id($firstUser->id);
         AwsUser::factory()->create([
             'user_id' => $firstUser->id,
             'external_user_id' => $externalUserId,
             'aws_collection_id' => $awsCollection->id,
         ]);
         $secondUser = User::factory()->create();
-        $secondExternalUserId = config('aws-rekognition.reference_prefix') . '-' . $secondUser->id;
+        $secondExternalUserId = generate_external_id($secondUser->id);
         AwsUser::factory()->create([
             'user_id' => $secondUser->id,
             'external_user_id' => $secondExternalUserId,
@@ -282,5 +286,36 @@ class RecognitionApiTest extends TestCase
                     ],
                 ]
             ]);
+    }
+
+    #[Test]
+    public function it_tests_process_faces_request()
+    {
+        /* SETUP */
+        Queue::fake();
+        $awsCollection = AwsCollection::factory()->create();
+        $fakeImages = [
+            UploadedFile::fake()->image('test1.jpg'),
+            UploadedFile::fake()->image('test2.png'),
+        ];
+        $parameters = [
+            'aws_collection_id' => $awsCollection->id,
+            'images' => $fakeImages,
+        ];
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->token,
+        ])->postJson(route('recognition.process.faces', ['user' => $this->user->id]), $parameters);
+
+        /* ASSERT */
+        $response->assertOk()
+            ->assertJson([
+                'data' => [
+                    'message' => 'Process faces request is sent successfully!',
+                ]
+            ]);
+        // Assert IndexFacesJob is dispatched
+        Queue::assertPushed(IndexFacesJob::class);
     }
 }

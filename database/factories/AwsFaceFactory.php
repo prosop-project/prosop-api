@@ -40,7 +40,7 @@ final class AwsFaceFactory extends Factory
         $awsUser = AwsUser::factory()->create([
             'user_id' => $user->id,
             'aws_collection_id' => $awsCollection->id,
-            'external_user_id' => config('aws-rekognition.reference_prefix') . '-' . $user->id,
+            'external_user_id' => generate_external_id($user->id),
         ]);
 
         return [

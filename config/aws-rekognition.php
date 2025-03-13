@@ -45,4 +45,11 @@ return [
      | Here you may specify the prefix for the AWS Rekognition service which can be used for external user id and so on.
      */
     'reference_prefix' => env('AWS_REKOGNITION_REFERENCE_PREFIX', 'rekognition-v1'),
+
+    /*
+     |--------------------------------------------------------------------------
+     | AWS Rekognition default value for threshold (used for associate faces, search faces by image, etc.)
+     |--------------------------------------------------------------------------
+     */
+    'user_match_threshold' => env('AWS_USER_MATCH_THRESHOLD', 80),
 ];

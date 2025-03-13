@@ -4,14 +4,22 @@ declare(strict_types=1);
 
 namespace App\Services\Recognition;
 
+use App\Events\ProcessFaceEvent;
 use App\Models\AwsCollection;
+use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use MoeMizrak\Rekognition\Data\AssociateFacesData;
 use MoeMizrak\Rekognition\Data\CreateCollectionData;
 use MoeMizrak\Rekognition\Data\DeleteCollectionData;
+use MoeMizrak\Rekognition\Data\ImageData;
+use MoeMizrak\Rekognition\Data\IndexFacesData;
 use MoeMizrak\Rekognition\Data\ListCollectionsData;
 use MoeMizrak\Rekognition\Data\ListUsersData;
+use MoeMizrak\Rekognition\Data\ResultData\AssociateFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\CreateCollectionResultData;
 use MoeMizrak\Rekognition\Data\ResultData\DeleteCollectionResultData;
+use MoeMizrak\Rekognition\Data\ResultData\IndexFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListCollectionsResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListUsersResultData;
 use MoeMizrak\Rekognition\Data\ResultData\UserResultData;
@@ -165,5 +173,85 @@ final readonly class AwsRekognitionService
         );
 
         return Rekognition::listUsers($listUsersData);
+    }
+
+    /**
+     * Index faces in AWS Rekognition.
+     *
+     * @param string $externalCollectionId
+     * @param UploadedFile $image
+     * @param User $user
+     *
+     * @return IndexFacesResultData
+     */
+    public function indexFaces(string $externalCollectionId, UploadedFile $image, User $user): IndexFacesResultData
+    {
+        // Read the image bytes (base64 encoded).
+        $base64Image = base64_encode($image->getContent());
+
+        // Prepare the image data.
+        $imageData = new ImageData(
+            bytes: $base64Image,
+        );
+
+        // Extract the image extension and size in KB for the external image id.
+        $extension = strtolower($image->getClientOriginalExtension() ?: $image->getMimeType());
+        $imageSizeKb = (int) round($image->getSize() / 1024);
+
+        // Prepare the data to index faces in AWS Rekognition.
+        $indexFacesData = new IndexFacesData(
+            collectionId: $externalCollectionId,
+            image: $imageData,
+            // We only index one face per image
+            maxFaces: 1,
+            // Generates a unique external image id by combining reference_prefix, the user id and the AWS Rekognition region and extra components
+            externalImageId: generate_external_id(userId: $user->id, includeRegion: true, extraComponents: [$extension, $imageSizeKb]),
+            qualityFilter: 'AUTO',
+            detectionAttributes: [],
+        );
+
+        return Rekognition::indexFaces($indexFacesData);
+    }
+
+    /**
+     * Associate faces in AWS Rekognition.
+     *
+     * @param string $externalCollectionId
+     * @param array<int, string> $externalFaceIds
+     * @param string $externalUserId
+     *
+     * @return AssociateFacesResultData
+     */
+    public function associateFaces(
+        string $externalCollectionId,
+        array $externalFaceIds,
+        string $externalUserId
+    ): AssociateFacesResultData {
+        // Prepare the data to associate faces in AWS Rekognition.
+        $associateFacesData = new AssociateFacesData(
+            collectionId: $externalCollectionId,
+            faceIds: $externalFaceIds,
+            userId: $externalUserId,
+            userMatchThreshold: (float) config('aws-rekognition.user_match_threshold'),
+        );
+
+        return Rekognition::associateFaces($associateFacesData);
+    }
+
+    /**
+     * Process faces where respectively it calls indexFacesJob and associateFacesJob for the full cycle of face processing.
+     *
+     * @param array<string, mixed> $validatedRequest
+     * @param User $user
+     *
+     * @return void
+     */
+    public function processFaces(array $validatedRequest, User $user): void
+    {
+        // Extract the required values
+        $awsCollectionId = Arr::get($validatedRequest, 'aws_collection_id');
+        $images = Arr::get($validatedRequest, 'images');
+
+        event(new ProcessFaceEvent($awsCollectionId, $images, $user));
     }
 }

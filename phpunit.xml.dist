@@ -29,5 +29,6 @@
         <env name="AWS_ACCESS_KEY_ID" value=""/>
         <env name="AWS_SECRET_ACCESS_KEY" value=""/>
         <env name="AWS_REKOGNITION_REFERENCE_PREFIX" value="rekognition-test-v1"/>
+        <env name="AWS_USER_MATCH_THRESHOLD" value="80"/>
     </php>
 </phpunit>

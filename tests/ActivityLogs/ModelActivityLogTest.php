@@ -2,11 +2,16 @@
 
 namespace Tests\ActivityLogs;
 
+use App\Actions\Recognition\CreateAwsFaceAction;
+use App\Actions\Recognition\UpdateAwsUserAction;
 use App\Enums\ActivityEvent;
 use App\Enums\ActivityLogName;
+use App\Models\AwsCollection;
+use App\Models\AwsUser;
 use App\Models\Link;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Services\ActivityLog\CreateAwsFaceModelActivityService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\Test;
@@ -53,7 +58,7 @@ class ModelActivityLogTest extends TestCase
             'description' => 'Link is created!',
             'subject_id' => $link->id,
             'subject_type' => Link::class,
-            'event' => 'created',
+            'event' => ActivityEvent::CREATED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->type' => $type,
@@ -87,7 +92,7 @@ class ModelActivityLogTest extends TestCase
             'description' => 'Link is updated!',
             'subject_id' => $link->id,
             'subject_type' => Link::class,
-            'event' => 'updated',
+            'event' => ActivityEvent::UPDATED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->description' => $newDescription,
@@ -117,7 +122,7 @@ class ModelActivityLogTest extends TestCase
             'description' => 'Link is deleted!',
             'subject_id' => $link->id,
             'subject_type' => Link::class,
-            'event' => 'deleted',
+            'event' => ActivityEvent::DELETED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->old->type' => $type,
@@ -148,7 +153,7 @@ class ModelActivityLogTest extends TestCase
             'log_name' => 'Link_model_activity',
             'subject_id' => $link->id,
             'subject_type' => Link::class,
-            'event' => 'updated',
+            'event' => ActivityEvent::UPDATED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->type' => $type,
@@ -182,7 +187,7 @@ class ModelActivityLogTest extends TestCase
             'description' => 'User is created!',
             'subject_id' => $newUser->id,
             'subject_type' => User::class,
-            'event' => 'created',
+            'event' => ActivityEvent::CREATED->value,
             'properties->attributes->username' => $username,
             'properties->attributes->email' => $email,
             'properties->attributes->views' => $views,
@@ -218,7 +223,7 @@ class ModelActivityLogTest extends TestCase
             'description' => 'User is updated!',
             'subject_id' => $newUser->id,
             'subject_type' => User::class,
-            'event' => 'updated',
+            'event' => ActivityEvent::UPDATED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->username' => $newUsername,
@@ -251,7 +256,7 @@ class ModelActivityLogTest extends TestCase
             'log_name' => 'User_model_activity',
             'subject_id' => $newUser->id,
             'subject_type' => User::class,
-            'event' => 'updated',
+            'event' => ActivityEvent::UPDATED->value,
             'properties->attributes->username' => $username,
             'properties->attributes->email' => $email,
             'properties->attributes->views' => 1,
@@ -281,7 +286,7 @@ class ModelActivityLogTest extends TestCase
             'log_name' => 'User_model_activity',
             'subject_id' => $newUser->id,
             'subject_type' => User::class,
-            'event' => 'created',
+            'event' => ActivityEvent::CREATED->value,
             'properties->attributes->username' => $username,
             'properties->attributes->email' => $email,
             'properties->attributes->views' => $views,
@@ -313,7 +318,7 @@ class ModelActivityLogTest extends TestCase
             'description' => 'User is deleted!',
             'subject_id' => $newUser->id,
             'subject_type' => User::class,
-            'event' => 'deleted',
+            'event' => ActivityEvent::DELETED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->old->username' => $username,
@@ -339,7 +344,7 @@ class ModelActivityLogTest extends TestCase
             'description' => 'Subscription is created!',
             'subject_id' => $subscription->id,
             'subject_type' => Subscription::class,
-            'event' => 'created',
+            'event' => ActivityEvent::CREATED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->user_id' => $newUser->id,
@@ -371,7 +376,7 @@ class ModelActivityLogTest extends TestCase
             'subject_id' => $subscription->id,
             'subject_type' => Subscription::class,
             'description' => 'Subscription is deleted!',
-            'event' => 'deleted',
+            'event' => ActivityEvent::DELETED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->old->user_id' => $newUser->id,
@@ -396,7 +401,7 @@ class ModelActivityLogTest extends TestCase
             'description' => 'Link is created!',
             'subject_id' => $link->id,
             'subject_type' => Link::class,
-            'event' => 'created',
+            'event' => ActivityEvent::CREATED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->type' => $type,
@@ -444,6 +449,98 @@ class ModelActivityLogTest extends TestCase
             'event' => ActivityEvent::ACTIVITYLOG_CLEAN_COMMAND->value,
             'properties->days' => $days,
             'properties->log_name' => $logName,
+        ]);
+    }
+
+    #[Test]
+    public function it_tests_activity_log_for_update_aws_user_action()
+    {
+        /* SETUP */
+        $awsUser = AwsUser::factory()->create();
+        $externalUserStatus = 'test_status';
+        $action = new UpdateAwsUserAction();
+
+        /* EXECUTE */
+        $action->handle($awsUser, $externalUserStatus);
+
+        /* ASSERT */
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'AwsUser_model_activity',
+            'description' => 'AwsUser is updated!',
+            'subject_id' => $awsUser->id,
+            'subject_type' => AwsUser::class,
+            'causer_id' => $this->user->id,
+            'event' => ActivityEvent::UPDATED->value,
+            'properties->attributes->external_user_status' => 'test_status',
+            'properties->old->external_user_status' => null,
+        ]);
+    }
+
+    #[Test]
+    public function it_tests_activity_log_for_create_aws_face_action_which_uses_inserts_that_bypass_default_activity_log()
+    {
+        /* SETUP */
+        $awsUser = AwsUser::factory()->create();
+        $awsCollection = AwsCollection::factory()->create();
+        $firstExternalFaceId = fake()->uuid();
+        $secondExternalFaceId = fake()->uuid();
+        $confidence = 95.99;
+        $confidenceSecond = 91.99;
+        $externalImageId = 'test_image_id';
+        $externalImageIdSecond = 'test_image_id_1';
+        $imageId = fake()->uuid();
+        $imageIdSecond = fake()->uuid();
+        $faceParams = [
+            [
+                'user_id' => $this->user->id,
+                'aws_user_id' => $awsUser->id,
+                'aws_collection_id' => $awsCollection->id,
+                'external_face_id' => $firstExternalFaceId,
+                'confidence' => $confidence,
+                'external_image_id' => $externalImageId,
+                'image_id' => $imageId,
+            ],
+            [
+                'user_id' => $this->user->id,
+                'aws_user_id' => $awsUser->id,
+                'aws_collection_id' => $awsCollection->id,
+                'external_face_id' => $secondExternalFaceId,
+                'confidence' => $confidenceSecond,
+                'external_image_id' => $externalImageIdSecond,
+                'image_id' => $imageIdSecond,
+            ],
+        ];
+        $activityService =  app(CreateAwsFaceModelActivityService::class);
+        $action = new CreateAwsFaceAction($activityService);
+
+        /* EXECUTE */
+        $action->handle($faceParams);
+
+        /* ASSERT */
+        $this->assertDatabaseHas('aws_faces', [
+            'user_id' => $this->user->id,
+            'aws_user_id' => $awsUser->id,
+            'aws_collection_id' => $awsCollection->id,
+            'external_face_id' => $firstExternalFaceId,
+            'confidence' => $confidence,
+            'external_image_id' => $externalImageId,
+            'image_id' => $imageId,
+        ]);
+        $this->assertDatabaseHas('aws_faces', [
+            'user_id' => $this->user->id,
+            'aws_user_id' => $awsUser->id,
+            'aws_collection_id' => $awsCollection->id,
+            'external_face_id' => $secondExternalFaceId,
+            'confidence' => $confidenceSecond,
+            'external_image_id' => $externalImageIdSecond,
+            'image_id' => $imageIdSecond,
+        ]);
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'AwsFace_model_activity',
+            'description' => 'AwsFace records are created!',
+            'causer_id' => $this->user->id,
+            'causer_type' => User::class,
+            'event' => ActivityEvent::CREATED->value,
         ]);
     }
 }

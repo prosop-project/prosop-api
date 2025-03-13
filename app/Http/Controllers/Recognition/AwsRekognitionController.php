@@ -13,6 +13,7 @@ use App\Http\Requests\Recognition\CreateCollectionRequest;
 use App\Http\Requests\Recognition\CreateOrDeleteAwsUserRequest;
 use App\Http\Requests\Recognition\ListExternalCollectionsRequest;
 use App\Http\Requests\Recognition\ListExternalUsersRequest;
+use App\Http\Requests\Recognition\ProcessFacesRequest;
 use App\Http\Resources\AwsCollectionResource;
 use App\Http\Resources\AwsUserResource;
 use App\Http\Resources\GenericResponseResource;
@@ -20,6 +21,7 @@ use App\Http\Resources\ListExternalCollectionResource;
 use App\Http\Resources\ListExternalUsersResource;
 use App\Models\AwsCollection;
 use App\Models\AwsUser;
+use App\Models\User;
 use App\Services\Recognition\AwsRekognitionService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -165,5 +167,21 @@ final readonly class AwsRekognitionController extends Controller
         $users = $this->awsRekognitionService->listExternalAwsUsers($request->validated());
 
         return new ListExternalUsersResource($users);
+    }
+
+    /**
+     * Process faces of the images (by calling respectively indexFaces and associateFaces methods) and store the results in the database.
+     * Queue jobs are used for processing the faces, because the process may take a long time so we return a response immediately and notify the user later.
+     *
+     * @param ProcessFacesRequest $request
+     * @param User $user
+     *
+     * @return GenericResponseResource
+     */
+    public function processFaces(ProcessFacesRequest $request, User $user): GenericResponseResource
+    {
+        $this->awsRekognitionService->processFaces($request->validated(), $user);
+
+        return new GenericResponseResource('Process faces request is sent successfully!');
     }
 }

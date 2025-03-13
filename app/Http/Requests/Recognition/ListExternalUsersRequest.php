@@ -9,7 +9,7 @@ use App\Http\Requests\BaseRequest;
 /**
  * ListExternalUsersRequest is the form request that handles the validation of the listUsers request to AWS Rekognition.
  *
- * @property string $aws_collection_id
+ * @property int $aws_collection_id
  * @property int|null $max_results
  * @property string|null $next_token
  *
@@ -23,7 +23,7 @@ final class ListExternalUsersRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'aws_collection_id' => ['required', 'string', 'exists:aws_collections,id'],
+            'aws_collection_id' => ['required', 'int', 'exists:aws_collections,id'],
             'max_results' => ['nullable', 'integer'],
             'next_token' => ['nullable', 'string'],
         ];

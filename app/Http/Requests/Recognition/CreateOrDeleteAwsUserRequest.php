@@ -9,7 +9,7 @@ use App\Http\Requests\BaseRequest;
 /**
  * CreateOrDeleteAwsUserRequest is the form request that handles the validation of the create/delete user request to AWS Rekognition.
  *
- * @property string $aws_collection_id
+ * @property int $aws_collection_id
  * @property int $user_id
  * @property string|null $client_request_token
  *
@@ -34,7 +34,7 @@ final class CreateOrDeleteAwsUserRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'aws_collection_id' => ['required', 'string', 'exists:aws_collections,id'],
+            'aws_collection_id' => ['required', 'int', 'exists:aws_collections,id'],
             'user_id' => ['required', 'integer'],
             'client_request_token' => ['nullable', 'string'],
         ];
@@ -46,7 +46,7 @@ final class CreateOrDeleteAwsUserRequest extends BaseRequest
     protected function passedValidation(): void
     {
         $this->merge([
-            'external_user_id' => config('aws-rekognition.reference_prefix') . '-' . $this->input('user_id'),
+            'external_user_id' => generate_external_id((int) $this->input('user_id')),
         ]);
     }
 }
