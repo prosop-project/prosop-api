@@ -51,7 +51,7 @@ if (! function_exists('generate_external_id')) {
         // The core components of the external id.
         $components = [
             config('aws-rekognition.reference_prefix'),
-            $userId
+            $userId,
         ];
 
         // Optionally include the region (e.g. for external_image_id).
