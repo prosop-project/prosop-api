@@ -8,18 +8,24 @@ use App\Actions\Recognition\CreateAwsUserAction;
 use App\Actions\Recognition\CreateCollectionAction;
 use App\Actions\Recognition\DeleteAwsUserAction;
 use App\Actions\Recognition\DeleteCollectionAction;
+use App\Actions\Recognition\DeleteFacesAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Recognition\CreateCollectionRequest;
 use App\Http\Requests\Recognition\CreateOrDeleteAwsUserRequest;
+use App\Http\Requests\Recognition\DeleteFacesRequest;
 use App\Http\Requests\Recognition\ListExternalCollectionsRequest;
+use App\Http\Requests\Recognition\ListExternalFacesRequest;
 use App\Http\Requests\Recognition\ListExternalUsersRequest;
 use App\Http\Requests\Recognition\ProcessFacesRequest;
 use App\Http\Resources\AwsCollectionResource;
+use App\Http\Resources\AwsFaceResource;
 use App\Http\Resources\AwsUserResource;
 use App\Http\Resources\GenericResponseResource;
 use App\Http\Resources\ListExternalCollectionResource;
+use App\Http\Resources\ListExternalFacesResource;
 use App\Http\Resources\ListExternalUsersResource;
 use App\Models\AwsCollection;
+use App\Models\AwsFace;
 use App\Models\AwsUser;
 use App\Models\User;
 use App\Services\Recognition\AwsRekognitionService;
@@ -183,5 +189,49 @@ final readonly class AwsRekognitionController extends Controller
         $this->awsRekognitionService->processFaces($request->validated(), $user);
 
         return new GenericResponseResource('Process faces request is sent successfully!');
+    }
+
+    /**
+     * Get all faces stored in the database (aws_faces table).
+     *
+     * @return AnonymousResourceCollection
+     */
+    public function getAwsFaces(): AnonymousResourceCollection
+    {
+        return AwsFaceResource::collection(AwsFace::all());
+    }
+
+    /**
+     * List external faces on the AWS side.
+     *
+     * @param ListExternalFacesRequest $request
+     *
+     * @return ListExternalFacesResource
+     */
+    public function listExternalFaces(ListExternalFacesRequest $request): ListExternalFacesResource
+    {
+        // List external faces on the aws side (external faces).
+        $faces = $this->awsRekognitionService->listExternalFaces($request->validated());
+
+        return new ListExternalFacesResource($faces);
+    }
+
+    /**
+     * Delete faces from both the database and AWS Rekognition.
+     *
+     * @param DeleteFacesRequest $request
+     * @param DeleteFacesAction $deleteFacesAction
+     *
+     * @return GenericResponseResource
+     */
+    public function deleteFaces(DeleteFacesRequest $request, DeleteFacesAction $deleteFacesAction): GenericResponseResource
+    {
+        // Delete a user on AWS Rekognition side by sending a request to AWS Rekognition API.
+        $this->awsRekognitionService->deleteFaces($request->validated());
+
+        // Delete the existing user in the aws_users table.
+        $deleteFacesAction->handle($request->aws_face_ids);
+
+        return new GenericResponseResource('Faces are deleted from both database and aws side successfully!');
     }
 }

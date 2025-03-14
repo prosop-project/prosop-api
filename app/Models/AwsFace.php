@@ -42,9 +42,7 @@ final class AwsFace extends Model
     public function casts(): array
     {
         return [
-            'external_face_id' => 'uuid',
-            'image_id' => 'uuid',
-            'confidence' => 'decimal',
+            'confidence' => 'float',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

@@ -73,6 +73,8 @@ final class IndexFacesJob implements ShouldQueue
                 'confidence' => $faceRecord?->face?->confidence,
                 'external_image_id' => $faceRecord?->face?->externalImageId,
                 'image_id' => $faceRecord?->face?->imageId,
+                'created_at' => now(),
+                'updated_at' => now(),
             ];
         }
 

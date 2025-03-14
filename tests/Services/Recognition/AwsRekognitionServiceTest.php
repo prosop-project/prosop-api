@@ -4,6 +4,7 @@ namespace Tests\Services\Recognition;
 
 use App\Jobs\IndexFacesJob;
 use App\Models\AwsCollection;
+use App\Models\AwsFace;
 use App\Models\User;
 use App\Services\Recognition\AwsRekognitionService;
 use Aws\Rekognition\RekognitionClient;
@@ -14,6 +15,7 @@ use MoeMizrak\Rekognition\Data\ResultData\AssociateFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\DeleteCollectionResultData;
 use MoeMizrak\Rekognition\Data\ResultData\IndexFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListCollectionsResultData;
+use MoeMizrak\Rekognition\Data\ResultData\ListFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListUsersResultData;
 use PHPUnit\Framework\Attributes\Test;
 use Spatie\LaravelData\DataCollection;
@@ -268,5 +270,40 @@ class AwsRekognitionServiceTest extends TestCase
 
         /* ASSERT */
         Queue::assertPushed(IndexFacesJob::class);
+    }
+
+    #[Test]
+    public function it_tests_aws_rekognition_list_faces_request()
+    {
+        /* SETUP */
+        $awsCollection = AwsCollection::factory()->create();
+        $user = User::factory()->create();
+        $firstAwsFace = AwsFace::factory()->create([
+            'aws_collection_id' => $awsCollection->id,
+            'user_id' => $user->id,
+        ]);
+        $secondAwsFace = AwsFace::factory()->create([
+            'aws_collection_id' => $awsCollection->id,
+            'user_id' => $user->id,
+        ]);
+        $validatedRequest = [
+            'aws_collection_id' => $awsCollection->id,
+            'user_id' => $user->id,
+            'aws_face_ids' => [$firstAwsFace->id, $secondAwsFace->id],
+            'max_results' => 20,
+        ];
+        $methodName = 'listFaces';
+        $this->mockRekognitionClient($methodName);
+
+        /* EXECUTE */
+        $response = $this->awsRekognitionService->listExternalFaces($validatedRequest);
+
+        /* ASSERT */
+        $this->metaDataAssertions($response);
+        $this->assertInstanceOf(
+            ListFacesResultData::class,
+            $response
+        );
+        $this->assertNotNull($response->faces);
     }
 }

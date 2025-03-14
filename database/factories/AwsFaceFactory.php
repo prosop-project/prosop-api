@@ -47,10 +47,10 @@ final class AwsFaceFactory extends Factory
             'user_id' => $user->id,
             'aws_user_id' => $awsUser->id,
             'aws_collection_id' => $awsCollection->id,
-            'external_face_id' => $this->faker->uuid,
-            'confidence' => $this->faker->randomFloat(2, 0, 100),
-            'external_image_id' => $this->faker->word(),
-            'image_id' => $this->faker->uuid,
+            'external_face_id' => fake()->uuid,
+            'confidence' => fake()->randomFloat(2, 0, 100),
+            'external_image_id' => fake()->word,
+            'image_id' => fake()->uuid,
         ];
     }
 }

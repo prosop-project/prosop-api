@@ -5,6 +5,7 @@ namespace Tests\API\Recognition;
 use App\Enums\ActivityEvent;
 use App\Jobs\IndexFacesJob;
 use App\Models\AwsCollection;
+use App\Models\AwsFace;
 use App\Models\AwsUser;
 use App\Models\User;
 use Aws\Rekognition\RekognitionClient;
@@ -317,5 +318,131 @@ class RecognitionApiTest extends TestCase
             ]);
         // Assert IndexFacesJob is dispatched
         Queue::assertPushed(IndexFacesJob::class);
+    }
+
+    #[Test]
+    public function it_tests_get_aws_faces_request()
+    {
+        /* SETUP */
+        $firstAwsFace = AwsFace::factory()->create();
+        $secondAwsFace = AwsFace::factory()->create();
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->token,
+        ])->getJson(route('recognition.aws.faces', ['user' => $this->user->id]));
+
+        /* ASSERT */
+        $response->assertOk()
+            ->assertJson([
+                'data' => [
+                    [
+                        'id' => $firstAwsFace->id,
+                        'user_id' => $firstAwsFace->user_id,
+                        'external_face_id' => $firstAwsFace->external_face_id,
+                    ],
+                    [
+                        'id' => $secondAwsFace->id,
+                        'user_id' => $secondAwsFace->user_id,
+                        'external_face_id' => $secondAwsFace->external_face_id,
+                    ],
+                ]
+            ]);
+    }
+
+    #[Test]
+    public function it_tests_list_external_faces_request()
+    {
+        /* SETUP */
+        $methodName = 'listFaces';
+        $this->mockRekognitionClient($methodName);
+        $awsCollection = AwsCollection::factory()->create();
+        $user = User::factory()->create();
+        $firstAwsFace = AwsFace::factory()->create([
+            'user_id' => $user->id,
+            'aws_collection_id' => $awsCollection->id,
+        ]);
+        $secondAwsFace = AwsFace::factory()->create([
+            'user_id' => $user->id,
+            'aws_collection_id' => $awsCollection->id,
+        ]);
+        $parameters = [
+            'aws_collection_id' => $awsCollection->id,
+            'user_id' => $user->id,
+            'aws_face_ids' => [$firstAwsFace->id, $secondAwsFace->id],
+            'max_results' => 20,
+        ];
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->token,
+        ])->getJson(route('recognition.external.list.faces', $parameters));
+
+        /* ASSERT */
+        $response->assertOk()
+            ->assertJson([
+                'data' => [
+                    'faces' => [
+                        [
+                            'external_user_id' => 'test_user_id',
+                            'external_face_id' => '038388f6-221a-4f3f-aab5-1ccd8256f7e8',
+                        ],
+                        [
+                            'external_user_id' => 'test_user_id',
+                            'external_face_id' => '938388f6-221a-4f3f-aab5-1ccd8256f7e3',
+                        ],
+                    ],
+                ],
+            ]);
+    }
+
+    #[Test]
+    public function it_tests_delete_faces_request()
+    {
+        /* SETUP */
+        $methodName = 'deleteFaces';
+        $this->mockRekognitionClient($methodName);
+        $awsCollection = AwsCollection::factory()->create();
+        $firstAwsFace = AwsFace::factory()->create([
+            'aws_collection_id' => $awsCollection->id,
+        ]);
+        $secondAwsFace = AwsFace::factory()->create([
+            'aws_collection_id' => $awsCollection->id,
+        ]);
+        $params = [
+            'aws_collection_id' => $awsCollection->id,
+            'aws_face_ids' => [$firstAwsFace->id, $secondAwsFace->id],
+        ];
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->token,
+        ])->deleteJson(route('recognition.delete.faces', $params));
+
+        /* ASSERT */
+        $response->assertOk()
+            ->assertJson([
+                'data' => [
+                    'message' => 'Faces are deleted from both database and aws side successfully!',
+                ],
+            ]);
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'AwsFace_model_activity',
+            'description' => 'AwsFace is deleted!',
+            'subject_id' => $firstAwsFace->id,
+            'subject_type' => AwsFace::class,
+            'causer_id' => $this->user->id,
+            'causer_type' => User::class,
+            'event' => ActivityEvent::DELETED->value,
+        ]);
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'AwsFace_model_activity',
+            'description' => 'AwsFace is deleted!',
+            'subject_id' => $secondAwsFace->id,
+            'subject_type' => AwsFace::class,
+            'causer_id' => $this->user->id,
+            'causer_type' => User::class,
+            'event' => ActivityEvent::DELETED->value,
+        ]);
     }
 }

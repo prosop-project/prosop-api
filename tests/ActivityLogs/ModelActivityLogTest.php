@@ -3,10 +3,12 @@
 namespace Tests\ActivityLogs;
 
 use App\Actions\Recognition\CreateAwsFaceAction;
+use App\Actions\Recognition\DeleteFacesAction;
 use App\Actions\Recognition\UpdateAwsUserAction;
 use App\Enums\ActivityEvent;
 use App\Enums\ActivityLogName;
 use App\Models\AwsCollection;
+use App\Models\AwsFace;
 use App\Models\AwsUser;
 use App\Models\Link;
 use App\Models\Subscription;
@@ -499,6 +501,8 @@ class ModelActivityLogTest extends TestCase
                 'confidence' => $confidence,
                 'external_image_id' => $externalImageId,
                 'image_id' => $imageId,
+                'created_at' => $this->now,
+                'updated_at' => $this->now,
             ],
             [
                 'user_id' => $this->user->id,
@@ -508,6 +512,8 @@ class ModelActivityLogTest extends TestCase
                 'confidence' => $confidenceSecond,
                 'external_image_id' => $externalImageIdSecond,
                 'image_id' => $imageIdSecond,
+                'created_at' => $this->now,
+                'updated_at' => $this->now,
             ],
         ];
         $activityService =  app(CreateAwsFaceModelActivityService::class);
@@ -541,6 +547,38 @@ class ModelActivityLogTest extends TestCase
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'event' => ActivityEvent::CREATED->value,
+        ]);
+    }
+
+    #[Test]
+    public function it_tests_whether_delete_face_action_triggers_activity_log_succesfully()
+    {
+        /* SETUP */
+        $firstAwsFace = AwsFace::factory()->create();
+        $secondAwsFace = AwsFace::factory()->create();
+        $action = new DeleteFacesAction();
+
+        /* EXECUTE */
+        $action->handle([$firstAwsFace->id, $secondAwsFace->id]);
+
+        /* ASSERT */
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'AwsFace_model_activity',
+            'description' => 'AwsFace is deleted!',
+            'subject_id' => $firstAwsFace->id,
+            'subject_type' => AwsFace::class,
+            'causer_id' => $this->user->id,
+            'causer_type' => User::class,
+            'event' => ActivityEvent::DELETED->value,
+        ]);
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'AwsFace_model_activity',
+            'description' => 'AwsFace is deleted!',
+            'subject_id' => $secondAwsFace->id,
+            'subject_type' => AwsFace::class,
+            'causer_id' => $this->user->id,
+            'causer_type' => User::class,
+            'event' => ActivityEvent::DELETED->value,
         ]);
     }
 }

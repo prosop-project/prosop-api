@@ -8,8 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @property int $external_user_id
- * @property string $external_user_status
+ * @property int|null $external_user_id
+ * @property string|null $external_user_status
  *
  * @class MatchedUserDataResource
  */

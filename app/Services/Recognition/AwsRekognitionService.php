@@ -6,21 +6,26 @@ namespace App\Services\Recognition;
 
 use App\Events\ProcessFaceEvent;
 use App\Models\AwsCollection;
+use App\Models\AwsFace;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use MoeMizrak\Rekognition\Data\AssociateFacesData;
 use MoeMizrak\Rekognition\Data\CreateCollectionData;
 use MoeMizrak\Rekognition\Data\DeleteCollectionData;
+use MoeMizrak\Rekognition\Data\DeleteFacesData;
 use MoeMizrak\Rekognition\Data\ImageData;
 use MoeMizrak\Rekognition\Data\IndexFacesData;
 use MoeMizrak\Rekognition\Data\ListCollectionsData;
+use MoeMizrak\Rekognition\Data\ListFacesData;
 use MoeMizrak\Rekognition\Data\ListUsersData;
 use MoeMizrak\Rekognition\Data\ResultData\AssociateFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\CreateCollectionResultData;
 use MoeMizrak\Rekognition\Data\ResultData\DeleteCollectionResultData;
+use MoeMizrak\Rekognition\Data\ResultData\DeleteFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\IndexFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListCollectionsResultData;
+use MoeMizrak\Rekognition\Data\ResultData\ListFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListUsersResultData;
 use MoeMizrak\Rekognition\Data\ResultData\UserResultData;
 use MoeMizrak\Rekognition\Data\UserData;
@@ -65,7 +70,8 @@ final readonly class AwsRekognitionService
     public function listExternalCollections(array $validatedRequest): ListCollectionsResultData
     {
         // Extract the required values
-        $maxResults = Arr::get($validatedRequest, 'max_results');
+        $validatedMaxResults = Arr::get($validatedRequest, 'max_results');
+        $maxResults = ! is_null($validatedMaxResults) ? (int) $validatedMaxResults : null;
         $nextToken = Arr::get($validatedRequest, 'next_token');
 
         // Prepare the data to list collections in AWS Rekognition.
@@ -159,7 +165,8 @@ final readonly class AwsRekognitionService
     {
         // Extract the required values
         $awsCollectionId = Arr::get($validatedRequest, 'aws_collection_id');
-        $maxResults = Arr::get($validatedRequest, 'max_results');
+        $validatedMaxResults = Arr::get($validatedRequest, 'max_results');
+        $maxResults = ! is_null($validatedMaxResults) ? (int) $validatedMaxResults : null;
         $nextToken = Arr::get($validatedRequest, 'next_token');
 
         // Fetch the AWS collection
@@ -253,5 +260,78 @@ final readonly class AwsRekognitionService
         $images = Arr::get($validatedRequest, 'images');
 
         event(new ProcessFaceEvent($awsCollectionId, $images, $user));
+    }
+
+    /**
+     * List external faces on the AWS side (external faces).
+     *
+     * @param array<string, mixed> $validatedRequest
+     *
+     * @return ListFacesResultData
+     */
+    public function listExternalFaces(array $validatedRequest): ListFacesResultData
+    {
+        // Retrieve the AWS collection id from the request
+        $awsCollectionId = Arr::get($validatedRequest, 'aws_collection_id');
+        $awsCollection = AwsCollection::query()->where('id', $awsCollectionId)->firstOrFail(); // Fetch the AWS collection
+        $externalCollectionId = $awsCollection->external_collection_id; // On the AWS side, the collection id refers to the external_collection_id on our side
+
+        // Retrieve the user id from the request
+        $userId = Arr::get($validatedRequest, 'user_id');
+        // On the AWS side, the user id refers to the external_user_id on our side
+        $externalUserId = ! is_null($userId) ? generate_external_id((int) $userId) : null;
+
+        // Retrieve the aws face ids, and get the external face ids from the database
+        $awsFaceIds = Arr::get($validatedRequest, 'aws_face_ids', []);
+        $externalFaceIds = AwsFace::query()
+            ->whereIn('id', $awsFaceIds)
+            ->pluck('external_face_id')
+            ->toArray();
+
+        // Retrieve the max results and next token from the request
+        $validatedMaxResults = Arr::get($validatedRequest, 'max_results');
+        $maxResults = ! is_null($validatedMaxResults) ? (int) $validatedMaxResults : null;
+        $nextToken = Arr::get($validatedRequest, 'next_token');
+
+        // Prepare the data to list faces in AWS Rekognition
+        $listFacesData = new ListFacesData(
+            collectionId: $externalCollectionId,
+            userId: $externalUserId,
+            faceIds: $externalFaceIds,
+            maxResults: $maxResults,
+            nextToken: $nextToken,
+        );
+
+        return Rekognition::listFaces($listFacesData);
+    }
+
+    /**
+     * Delete faces from a collection in AWS Rekognition.
+     *
+     * @param array<string, mixed> $validatedRequest
+     *
+     * @return DeleteFacesResultData
+     */
+    public function deleteFaces(array $validatedRequest): DeleteFacesResultData
+    {
+        // Retrieve the AWS collection id from the request
+        $awsCollectionId = Arr::get($validatedRequest, 'aws_collection_id');
+        $awsCollection = AwsCollection::query()->where('id', $awsCollectionId)->firstOrFail(); // Fetch the AWS collection
+        $externalCollectionId = $awsCollection->external_collection_id; // On the AWS side, the collection id refers to the external_collection_id on our side
+
+        // Retrieve the aws face ids, and get the external face ids from the database
+        $awsFaceIds = Arr::get($validatedRequest, 'aws_face_ids', []);
+        $externalFaceIds = AwsFace::query()
+            ->whereIn('id', $awsFaceIds)
+            ->pluck('external_face_id')
+            ->toArray();
+
+        // Prepare the data to delete faces in AWS Rekognition
+        $deleteFacesData = new DeleteFacesData(
+            collectionId: $externalCollectionId,
+            faceIds: $externalFaceIds,
+        );
+
+        return Rekognition::deleteFaces($deleteFacesData);
     }
 }

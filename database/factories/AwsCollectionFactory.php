@@ -32,7 +32,7 @@ final class AwsCollectionFactory extends Factory
      */
     public function definition(): array
     {
-        $externalCollectionId = $this->faker->unique()->word;
+        $externalCollectionId = fake()->unique()->word;
 
         return [
             'external_collection_id' => $externalCollectionId,

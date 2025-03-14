@@ -138,7 +138,7 @@ Route::prefix('recognition')->name('recognition.')->group(function () {
         // Getting aws users (both database aws_users and AWS Rekognition side users) is only allowed for admin users.
         Route::middleware(ValidateUserIsAdmin::class)->group(function () {
             Route::get('/aws_users', [AwsRekognitionController::class, 'getAwsUsers'])->name('aws.users');
-            Route::get('external/list_aws_users', [AwsRekognitionController::class, 'listExternalAwsUsers'])->name('external.list.users');
+            Route::get('/external/list_aws_users', [AwsRekognitionController::class, 'listExternalAwsUsers'])->name('external.list.users');
         });
     });
 
@@ -147,5 +147,12 @@ Route::prefix('recognition')->name('recognition.')->group(function () {
      */
     Route::middleware(['auth:api'])->group(function () {
         Route::post('/process_faces/{user}', [AwsRekognitionController::class, 'processFaces'])->name('process.faces');
+
+        // Getting/deleting aws faces (both database aws_faces and AWS Rekognition side faces) is only allowed for admin users.
+        Route::middleware(ValidateUserIsAdmin::class)->group(function () {
+            Route::get('/aws_faces/{user}', [AwsRekognitionController::class, 'getAwsFaces'])->name('aws.faces');
+            Route::get('/external/list_faces', [AwsRekognitionController::class, 'listExternalFaces'])->name('external.list.faces');
+            Route::delete('/delete_faces', [AwsRekognitionController::class, 'deleteFaces'])->name('delete.faces');
+        });
     });
 });
