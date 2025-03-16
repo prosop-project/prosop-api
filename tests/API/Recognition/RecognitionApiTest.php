@@ -4,6 +4,7 @@ namespace Tests\API\Recognition;
 
 use App\Enums\ActivityEvent;
 use App\Jobs\IndexFacesJob;
+use App\Jobs\SearchUsersByImageJob;
 use App\Models\AwsCollection;
 use App\Models\AwsFace;
 use App\Models\AwsUser;
@@ -71,7 +72,7 @@ class RecognitionApiTest extends TestCase
         /* EXECUTE */
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('recognition.create.collection', $parameters));
+        ])->postJson(route('recognition.create.collection'), $parameters);
 
         /* ASSERT */
         $response->assertCreated()
@@ -173,7 +174,7 @@ class RecognitionApiTest extends TestCase
         /* EXECUTE */
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('recognition.create.aws.user', $parameters));
+        ])->postJson(route('recognition.create.aws.user'), $parameters);
 
         /* ASSERT */
         $externalUserId = generate_external_id($parameters['user_id']);
@@ -444,5 +445,34 @@ class RecognitionApiTest extends TestCase
             'causer_type' => User::class,
             'event' => ActivityEvent::DELETED->value,
         ]);
+    }
+
+    #[Test]
+    public function it_tests_search_users_by_image_request()
+    {
+        /* SETUP */
+        Queue::fake();
+        $awsCollection = AwsCollection::factory()->create();
+        $parameters = [
+            'search_strategies' => ['search_users_by_image'],
+            'aws_collection_id' => $awsCollection->id,
+            'image' => UploadedFile::fake()->image('test.jpg'),
+            'max_users' => 5,
+        ];
+
+        /* EXECUTE */
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->token,
+        ])->postJson(route('recognition.search.collection'), $parameters);
+
+        /* ASSERT */
+        $response->assertOk()
+            ->assertJson([
+                'data' => [
+                    'message' => 'Search collection request is sent successfully!',
+                ]
+            ]);
+        // Assert SearchUsersByImageJob is dispatched
+        Queue::assertPushed(SearchUsersByImageJob::class);
     }
 }

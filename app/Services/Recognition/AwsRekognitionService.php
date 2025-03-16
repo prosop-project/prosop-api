@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Recognition;
 
 use App\Events\ProcessFaceEvent;
+use App\Events\SearchUsersByImageEvent;
 use App\Models\AwsCollection;
 use App\Models\AwsFace;
 use App\Models\User;
@@ -27,7 +28,9 @@ use MoeMizrak\Rekognition\Data\ResultData\IndexFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListCollectionsResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListUsersResultData;
+use MoeMizrak\Rekognition\Data\ResultData\SearchUsersByImageResultData;
 use MoeMizrak\Rekognition\Data\ResultData\UserResultData;
+use MoeMizrak\Rekognition\Data\SearchUsersByImageData;
 use MoeMizrak\Rekognition\Data\UserData;
 use MoeMizrak\Rekognition\Facades\Rekognition;
 
@@ -213,7 +216,6 @@ final readonly class AwsRekognitionService
             maxFaces: 1,
             // Generates a unique external image id by combining reference_prefix, the user id and the AWS Rekognition region and extra components
             externalImageId: generate_external_id(userId: $user->id, includeRegion: true, extraComponents: [$extension, $imageSizeKb]),
-            qualityFilter: 'AUTO',
             detectionAttributes: [],
         );
 
@@ -333,5 +335,59 @@ final readonly class AwsRekognitionService
         );
 
         return Rekognition::deleteFaces($deleteFacesData);
+    }
+
+    /**
+     * This method handles the search users by image, and other searches that can be added such as search faces by image and so on.
+     *
+     * @param array<string, mixed> $validatedRequest
+     *
+     * @return void
+     */
+    public function search(array $validatedRequest): void
+    {
+        // Extract the required values.
+        $awsCollectionId = Arr::get($validatedRequest, 'aws_collection_id');
+        $image = Arr::get($validatedRequest, 'image');
+        $maxUsers = Arr::get($validatedRequest, 'max_users');
+        $searchStrategies = Arr::get($validatedRequest, 'search_strategies');
+
+        // Here we can control which event to fire based on the request. For now, we only have search users by image.
+        if (in_array('search_users_by_image', $searchStrategies, true)) {
+            event(new SearchUsersByImageEvent($awsCollectionId, $image, $maxUsers));
+        }
+    }
+
+    /**
+     * Search users by image in AWS Rekognition.
+     *
+     * @param string $externalCollectionId
+     * @param UploadedFile $image
+     * @param int|null $maxUsers
+     *
+     * @return SearchUsersByImageResultData
+     */
+    public function searchUsersByImage(
+        string $externalCollectionId,
+        UploadedFile $image,
+        ?int $maxUsers = null
+    ): SearchUsersByImageResultData {
+        // Read the image bytes (base64 encoded).
+        $base64Image = base64_encode($image->getContent());
+
+        // Prepare the image data.
+        $imageData = new ImageData(
+            bytes: $base64Image,
+        );
+
+        // Prepare the data to search users by image in AWS Rekognition.
+        $searchUsersByImageData = new SearchUsersByImageData(
+            collectionId: $externalCollectionId,
+            image: $imageData,
+            maxUsers: $maxUsers ?? (int) config('aws-rekognition.search_result_max_users'),
+            userMatchThreshold: (float) config('aws-rekognition.user_match_threshold'),
+        );
+
+        return Rekognition::searchUsersByImage($searchUsersByImageData);
     }
 }

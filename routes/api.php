@@ -146,7 +146,7 @@ Route::prefix('recognition')->name('recognition.')->group(function () {
      * Endpoints for managing aws faces.
      */
     Route::middleware(['auth:api'])->group(function () {
-        Route::post('/process_faces/{user}', [AwsRekognitionController::class, 'processFaces'])->name('process.faces');
+        Route::middleware(['throttle:5,1'])->post('/process_faces/{user}', [AwsRekognitionController::class, 'processFaces'])->name('process.faces');
 
         // Getting/deleting aws faces (both database aws_faces and AWS Rekognition side faces) is only allowed for admin users.
         Route::middleware(ValidateUserIsAdmin::class)->group(function () {
@@ -154,5 +154,12 @@ Route::prefix('recognition')->name('recognition.')->group(function () {
             Route::get('/external/list_faces', [AwsRekognitionController::class, 'listExternalFaces'])->name('external.list.faces');
             Route::delete('/delete_faces', [AwsRekognitionController::class, 'deleteFaces'])->name('delete.faces');
         });
+    });
+
+    /*
+     * Endpoints for searching collection for matching faces, user ids and so on.
+     */
+    Route::prefix('search')->group(function () {
+        Route::middleware(['throttle:5,1'])->post('/collection', [AwsRekognitionController::class, 'searchCollection'])->name('search.collection');
     });
 });

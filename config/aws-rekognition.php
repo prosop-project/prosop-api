@@ -52,4 +52,11 @@ return [
      |--------------------------------------------------------------------------
      */
     'user_match_threshold' => env('AWS_USER_MATCH_THRESHOLD', 80),
+
+    /*
+     |--------------------------------------------------------------------------
+     | AWS Rekognition default value for max users to return for search results e.g. searchUsersByImage max_users parameter.
+     |--------------------------------------------------------------------------
+     */
+    'search_result_max_users' => env('AWS_SEARCH_RESULT_MAX_USERS', 5),
 ];

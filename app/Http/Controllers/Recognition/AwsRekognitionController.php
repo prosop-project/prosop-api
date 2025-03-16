@@ -17,6 +17,7 @@ use App\Http\Requests\Recognition\ListExternalCollectionsRequest;
 use App\Http\Requests\Recognition\ListExternalFacesRequest;
 use App\Http\Requests\Recognition\ListExternalUsersRequest;
 use App\Http\Requests\Recognition\ProcessFacesRequest;
+use App\Http\Requests\Recognition\SearchCollectionRequest;
 use App\Http\Resources\AwsCollectionResource;
 use App\Http\Resources\AwsFaceResource;
 use App\Http\Resources\AwsUserResource;
@@ -233,5 +234,20 @@ final readonly class AwsRekognitionController extends Controller
         $deleteFacesAction->handle($request->aws_face_ids);
 
         return new GenericResponseResource('Faces are deleted from both database and aws side successfully!');
+    }
+
+    /**
+     * Search collection for matching faces, user ids and so on.
+     *
+     * @param SearchCollectionRequest $request
+     *
+     * @return GenericResponseResource
+     */
+    public function searchCollection(SearchCollectionRequest $request): GenericResponseResource
+    {
+        // Search collection for matching faces, user ids and so on.
+        $this->awsRekognitionService->search($request->validated());
+
+        return new GenericResponseResource('Search collection request is sent successfully!');
     }
 }

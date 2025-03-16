@@ -17,6 +17,8 @@ use MoeMizrak\Rekognition\Data\ResultData\IndexFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListCollectionsResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\ListUsersResultData;
+use MoeMizrak\Rekognition\Data\ResultData\SearchedFaceData;
+use MoeMizrak\Rekognition\Data\ResultData\SearchUsersByImageResultData;
 use PHPUnit\Framework\Attributes\Test;
 use Spatie\LaravelData\DataCollection;
 use Tests\TestCase;
@@ -305,5 +307,34 @@ class AwsRekognitionServiceTest extends TestCase
             $response
         );
         $this->assertNotNull($response->faces);
+    }
+
+    #[Test]
+    public function it_tests_aws_rekognition_search_users_by_image_request()
+    {
+        /* SETUP */
+        $externalCollectionId = 'test_collection_id';
+        $image = UploadedFile::fake()->image('test_image.jpg');
+        $maxUsers = 10;
+        $methodName = 'searchUsersByImage';
+        $this->mockRekognitionClient($methodName);
+
+        /* EXECUTE */
+        $response = $this->awsRekognitionService->searchUsersByImage($externalCollectionId, $image, $maxUsers);
+
+        /* ASSERT */
+        $this->metaDataAssertions($response);
+        $this->assertInstanceOf(
+            SearchUsersByImageResultData::class,
+            $response
+        );
+        $this->assertNotNull($response->faceModelVersion);
+        $this->assertNotNull($response->userMatches);
+        $this->assertInstanceOf(DataCollection::class, $response->userMatches);
+        $this->assertNotNull($response->searchedFace);
+        $this->assertInstanceOf(
+            SearchedFaceData::class,
+            $response->searchedFace
+        );
     }
 }
