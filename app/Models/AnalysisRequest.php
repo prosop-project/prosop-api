@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Casts\LowercaseStatusCast;
 use App\Models\Traits\LogsActivityTrait;
 use Carbon\Carbon;
-use Database\Factories\AwsUserFactory;
+use Database\Factories\AnalysisRequestFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,21 +17,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property int $user_id
  * @property int $aws_collection_id
- * @property string $external_user_id
- * @property string|null $external_user_status
+ * @property string $operation
+ * @property string|null $status
+ * @property array<string, mixed>|null $metadata
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
  * @property-read User $user
  * @property-read AwsCollection $awsCollection
- * @property-read Collection<int, AwsFace> $awsFaces
  * @property-read Collection<int, AwsSimilarityResult> $awsSimilarityResults
  *
- * @class AwsUser
+ * @class AnalysisRequest
  */
-final class AwsUser extends Model
+final class AnalysisRequest extends Model
 {
-    /** @use HasFactory<AwsUserFactory> */
+    /** @use HasFactory<AnalysisRequestFactory> */
     use HasFactory, LogsActivityTrait;
 
     /**
@@ -43,14 +42,14 @@ final class AwsUser extends Model
     public function casts(): array
     {
         return [
-            'external_user_status' => LowercaseStatusCast::class,
+            'metadata' => 'array',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
     }
 
     /**
-     * Get the user who owns this AWS user.
+     * Get the user who owns this analysis request.
      *
      * @return BelongsTo<User, covariant $this>
      */
@@ -60,7 +59,7 @@ final class AwsUser extends Model
     }
 
     /**
-     * Get the AWS collection that this AWS user belongs to.
+     * Get the AWS collection that this analysis request belongs to.
      *
      * @return BelongsTo<AwsCollection, covariant $this>
      */
@@ -70,17 +69,7 @@ final class AwsUser extends Model
     }
 
     /**
-     * Get the AWS faces that belong to this AWS user.
-     *
-     * @return HasMany<AwsFace, covariant $this>
-     */
-    public function awsFaces(): HasMany
-    {
-        return $this->hasMany(AwsFace::class);
-    }
-
-    /**
-     * Get the AWS similarity results for this AWS user (AWS user has many AWS similarity results).
+     * Get the AWS similarity results for this analysis request.
      *
      * @return HasMany<AwsSimilarityResult, covariant $this>
      */

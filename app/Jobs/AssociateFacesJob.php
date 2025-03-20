@@ -26,9 +26,9 @@ final class AssociateFacesJob implements ShouldQueue
      * @param array<int, string> $externalFaceIds
      */
     public function __construct(
-        public AwsCollection $awsCollection,
-        public AwsUser $awsUser,
-        public array $externalFaceIds
+        protected AwsCollection $awsCollection,
+        protected AwsUser $awsUser,
+        protected array $externalFaceIds
     ) {}
 
     /**
@@ -43,7 +43,11 @@ final class AssociateFacesJob implements ShouldQueue
         $externalUserId = $this->awsUser->external_user_id;
 
         // Associate faces by calling the AWS Rekognition service associateFaces method
-        $associateFacesResultData = $awsRekognitionService->associateFaces($externalCollectionId, $this->externalFaceIds, $externalUserId);
+        $associateFacesResultData = $awsRekognitionService->associateFaces(
+            $externalCollectionId,
+            $this->externalFaceIds,
+            $externalUserId
+        );
 
         // Retrieve the external_user_status from the associateFacesResultData
         $externalUserStatus = $associateFacesResultData->userStatus;

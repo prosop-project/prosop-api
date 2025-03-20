@@ -7,7 +7,6 @@ namespace App\Events;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Queue\SerializesModels;
 
 /**
@@ -21,8 +20,8 @@ final class ProcessFaceEvent
      * Create a new event instance.
      *
      * @param int $awsCollectionId
-     * @param array<int, UploadedFile> $images
+     * @param array<int, string> $imagePaths
      * @param User $user
      */
-    public function __construct(public int $awsCollectionId, public array $images, public User $user) {}
+    public function __construct(public int $awsCollectionId, public array $imagePaths, public User $user) {}
 }

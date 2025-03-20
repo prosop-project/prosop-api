@@ -10,26 +10,28 @@ use App\Models\AwsCollection;
 use App\Models\AwsUser;
 use App\Models\User;
 use App\Services\Recognition\AwsRekognitionService;
+use App\Traits\PrepareImageDataTrait;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * @class IndexFacesJob
  */
 final class IndexFacesJob implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, PrepareImageDataTrait;
 
     /**
      * Create a new job instance.
      *
      * @param int $awsCollectionId
-     * @param array<int, UploadedFile> $images
+     * @param array<int, string> $imagePaths
      * @param User $user
      */
-    public function __construct(public int $awsCollectionId, public array $images, public User $user) {}
+    public function __construct(protected int $awsCollectionId, protected array $imagePaths, protected User $user) {}
 
     /**
      * Execute the job.
@@ -52,9 +54,16 @@ final class IndexFacesJob implements ShouldQueue
 
         $faceParams = [];
 
-        foreach ($this->images as $image) {
+        foreach ($this->imagePaths as $imagePath) {
+            // Prepare the image data and generate an external image id
+            $imageData = $this->prepareImageData($imagePath);
+            $externalImageId = $this->generateExternalImageId($imagePath, $this->user);
+
             // Index faces in the image
-            $indexFacesResultData = $awsRekognitionService->indexFaces($awsCollection->external_collection_id, $image, $this->user);
+            $indexFacesResultData = $awsRekognitionService->indexFaces($awsCollection->external_collection_id, $imageData, $externalImageId);
+
+            // Delete the image file after indexing the faces
+            Storage::delete($imagePath);
 
             // We only index one face per image, so we get the first face record
             $faceRecord = Arr::get($indexFacesResultData->faceRecords?->items(), 0);
@@ -78,7 +87,10 @@ final class IndexFacesJob implements ShouldQueue
             ];
         }
 
-        // If no faces are detected in any of the images, return. Here we will also notify the user that no faces were detected in provided images.
+        /*
+         * If no faces are detected in any of the images, return.
+         * Here we will also notify the user that no faces were detected in provided images.
+         */
         if (empty($faceParams)) {
             return;
         }
@@ -91,5 +103,30 @@ final class IndexFacesJob implements ShouldQueue
 
         // Fire the event to associate the faces which calls queue job AssociateFacesJob
         event(new AssociateFacesEvent($awsCollection, $awsUser, $externalFaceIds));
+    }
+
+    /**
+     * Generate an external image id for the image.
+     *
+     * @param string $imagePath
+     * @param User $user
+     *
+     * @return string
+     */
+    private function generateExternalImageId(string $imagePath, User $user): string
+    {
+        // Get the file extension from the path
+        $extension = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
+        // Get the file size in bytes
+        $fileSize = Storage::fileSize($imagePath);
+        // Convert the file size to kilobytes
+        $imageSizeKb = (int) round($fileSize / 1024);
+
+        // Generate the external image id by using the generate_external_id helper function
+        return generate_external_id(
+            userId: $user->id,
+            includeRegion: true,
+            extraComponents: [$extension, $imageSizeKb, Str::random(5)]
+        );
     }
 }

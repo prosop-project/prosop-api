@@ -22,6 +22,6 @@ final readonly class ProcessFaceListener
     public function handle(ProcessFaceEvent $event): void
     {
         // Dispatch the queue job to index the faces
-        IndexFacesJob::dispatch($event->awsCollectionId, $event->images, $event->user);
+        IndexFacesJob::dispatch($event->awsCollectionId, $event->imagePaths, $event->user);
     }
 }

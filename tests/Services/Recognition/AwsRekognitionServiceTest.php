@@ -7,10 +7,10 @@ use App\Models\AwsCollection;
 use App\Models\AwsFace;
 use App\Models\User;
 use App\Services\Recognition\AwsRekognitionService;
-use Aws\Rekognition\RekognitionClient;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
-use Mockery\MockInterface;
+use Illuminate\Support\Facades\Storage;
+use MoeMizrak\Rekognition\Data\ImageData;
 use MoeMizrak\Rekognition\Data\ResultData\AssociateFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\DeleteCollectionResultData;
 use MoeMizrak\Rekognition\Data\ResultData\IndexFacesResultData;
@@ -22,12 +22,9 @@ use MoeMizrak\Rekognition\Data\ResultData\SearchUsersByImageResultData;
 use PHPUnit\Framework\Attributes\Test;
 use Spatie\LaravelData\DataCollection;
 use Tests\TestCase;
-use Tests\TestSupport\MockRekognitionTrait;
 
 class AwsRekognitionServiceTest extends TestCase
 {
-    use MockRekognitionTrait;
-
     private AwsRekognitionService $awsRekognitionService;
 
     protected function setUp(): void
@@ -49,24 +46,6 @@ class AwsRekognitionServiceTest extends TestCase
         $this->assertEquals(200, $response->metadata->statusCode);
         $this->assertNotNull($response->metadata->effectiveUri);
         $this->assertIsArray($response->metadata->headers);
-    }
-
-    /**
-     * Mock the Rekognition client for testing in order to avoid making real requests.
-     *
-     * @param string $methodName
-     *
-     * @return void
-     */
-    private function mockRekognitionClient(string $methodName): void
-    {
-        $mockResponse = $this->mockRekognitionResponse($methodName);
-
-        $this->mock(RekognitionClient::class, function (MockInterface $mock) use($methodName, $mockResponse) {
-            $mock->shouldReceive($methodName)
-                ->once()
-                ->andReturn($mockResponse);
-        });
     }
 
     #[Test]
@@ -206,12 +185,15 @@ class AwsRekognitionServiceTest extends TestCase
         /* SETUP */
         $externalCollectionId = 'test_collection_id';
         $image = UploadedFile::fake()->image('test_image.jpg');
+        $imageData = new ImageData(
+            bytes: base64_encode($image->getContent())
+        );
         $user = User::factory()->create();
         $methodName = 'indexFaces';
         $this->mockRekognitionClient($methodName);
 
         /* EXECUTE */
-        $response = $this->awsRekognitionService->indexFaces($externalCollectionId, $image, $user);
+        $response = $this->awsRekognitionService->indexFaces($externalCollectionId, $imageData, $user);
 
         /* ASSERT */
         $this->metaDataAssertions($response);
@@ -272,6 +254,8 @@ class AwsRekognitionServiceTest extends TestCase
 
         /* ASSERT */
         Queue::assertPushed(IndexFacesJob::class);
+        // Clean temp storage
+        Storage::delete(Storage::allFiles('temp'));
     }
 
     #[Test]
@@ -315,12 +299,15 @@ class AwsRekognitionServiceTest extends TestCase
         /* SETUP */
         $externalCollectionId = 'test_collection_id';
         $image = UploadedFile::fake()->image('test_image.jpg');
+        $imageData = new ImageData(
+            bytes: base64_encode($image->getContent())
+        );
         $maxUsers = 10;
         $methodName = 'searchUsersByImage';
         $this->mockRekognitionClient($methodName);
 
         /* EXECUTE */
-        $response = $this->awsRekognitionService->searchUsersByImage($externalCollectionId, $image, $maxUsers);
+        $response = $this->awsRekognitionService->searchUsersByImage($externalCollectionId, $imageData, $maxUsers);
 
         /* ASSERT */
         $this->metaDataAssertions($response);

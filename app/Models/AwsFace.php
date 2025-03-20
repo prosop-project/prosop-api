@@ -7,9 +7,11 @@ namespace App\Models;
 use App\Models\Traits\LogsActivityTrait;
 use Carbon\Carbon;
 use Database\Factories\AwsFaceFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -26,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read User $user
  * @property-read AwsUser $awsUser
  * @property-read AwsCollection $awsCollection
+ * @property-read Collection<int, AwsSimilarityResult> $awsSimilarityResults
  *
  * @class AwsFace
  */
@@ -49,7 +52,7 @@ final class AwsFace extends Model
     }
 
     /**
-     * Get the user who owns this AWS user.
+     * Get the user who owns this AWS face.
      *
      * @return BelongsTo<User, covariant $this>
      */
@@ -76,5 +79,15 @@ final class AwsFace extends Model
     public function awsCollection(): BelongsTo
     {
         return $this->belongsTo(AwsCollection::class);
+    }
+
+    /**
+     * Get the AWS similarity results for this AWS face (AWS face has many AWS similarity results).
+     *
+     * @return HasMany<AwsSimilarityResult, covariant $this>
+     */
+    public function awsSimilarityResults(): HasMany
+    {
+        return $this->hasMany(AwsSimilarityResult::class);
     }
 }

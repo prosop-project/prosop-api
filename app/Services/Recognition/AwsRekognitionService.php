@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Recognition;
 
+use App\Enums\AnalysisOperation;
 use App\Events\ProcessFaceEvent;
 use App\Events\SearchUsersByImageEvent;
 use App\Models\AwsCollection;
 use App\Models\AwsFace;
 use App\Models\User;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use MoeMizrak\Rekognition\Data\AssociateFacesData;
 use MoeMizrak\Rekognition\Data\CreateCollectionData;
 use MoeMizrak\Rekognition\Data\DeleteCollectionData;
@@ -189,25 +191,13 @@ final readonly class AwsRekognitionService
      * Index faces in AWS Rekognition.
      *
      * @param string $externalCollectionId
-     * @param UploadedFile $image
-     * @param User $user
+     * @param ImageData $imageData
+     * @param string|null $externalImageId
      *
      * @return IndexFacesResultData
      */
-    public function indexFaces(string $externalCollectionId, UploadedFile $image, User $user): IndexFacesResultData
+    public function indexFaces(string $externalCollectionId, ImageData $imageData, ?string $externalImageId): IndexFacesResultData
     {
-        // Read the image bytes (base64 encoded).
-        $base64Image = base64_encode($image->getContent());
-
-        // Prepare the image data.
-        $imageData = new ImageData(
-            bytes: $base64Image,
-        );
-
-        // Extract the image extension and size in KB for the external image id.
-        $extension = strtolower($image->getClientOriginalExtension() ?: $image->getMimeType());
-        $imageSizeKb = (int) round($image->getSize() / 1024);
-
         // Prepare the data to index faces in AWS Rekognition.
         $indexFacesData = new IndexFacesData(
             collectionId: $externalCollectionId,
@@ -215,7 +205,7 @@ final readonly class AwsRekognitionService
             // We only index one face per image
             maxFaces: 1,
             // Generates a unique external image id by combining reference_prefix, the user id and the AWS Rekognition region and extra components
-            externalImageId: generate_external_id(userId: $user->id, includeRegion: true, extraComponents: [$extension, $imageSizeKb]),
+            externalImageId: $externalImageId,
             detectionAttributes: [],
         );
 
@@ -257,11 +247,27 @@ final readonly class AwsRekognitionService
      */
     public function processFaces(array $validatedRequest, User $user): void
     {
-        // Extract the required values
+        // Extract aws collection id
         $awsCollectionId = Arr::get($validatedRequest, 'aws_collection_id');
+
+        // Extract images
         $images = Arr::get($validatedRequest, 'images');
 
-        event(new ProcessFaceEvent($awsCollectionId, $images, $user));
+        $tempImagePaths = [];
+
+        // Loop through the images and store them in a temporary path
+        foreach ($images as $image) {
+            // Generate a temporary path for the image
+            $tempPath = 'temp/' . Str::uuid() . '.' . $image->getClientOriginalExtension();
+
+            // Store the image in the temporary path
+            Storage::put($tempPath, $image->getContent());
+
+            // Add the temporary path to the array
+            $tempImagePaths[] = $tempPath;
+        }
+
+        event(new ProcessFaceEvent($awsCollectionId, $tempImagePaths, $user));
     }
 
     /**
@@ -347,14 +353,20 @@ final readonly class AwsRekognitionService
     public function search(array $validatedRequest): void
     {
         // Extract the required values.
+        $userId = Arr::get($validatedRequest, 'user_id');
         $awsCollectionId = Arr::get($validatedRequest, 'aws_collection_id');
         $image = Arr::get($validatedRequest, 'image');
         $maxUsers = Arr::get($validatedRequest, 'max_users');
-        $searchStrategies = Arr::get($validatedRequest, 'search_strategies');
+        $analysisOperations = Arr::get($validatedRequest, 'analysis_operations');
 
         // Here we can control which event to fire based on the request. For now, we only have search users by image.
-        if (in_array('search_users_by_image', $searchStrategies, true)) {
-            event(new SearchUsersByImageEvent($awsCollectionId, $image, $maxUsers));
+        if (in_array(AnalysisOperation::SEARCH_USERS_BY_IMAGE->value, $analysisOperations, true)) {
+            // Generate a temporary path for the image
+            $tempImagePath = 'temp/' . Str::uuid() . '.' . $image->getClientOriginalExtension();
+            // Store the image in the temporary path
+            Storage::put($tempImagePath, $image->getContent());
+
+            event(new SearchUsersByImageEvent($userId, $awsCollectionId, $tempImagePath, $maxUsers));
         }
     }
 
@@ -362,24 +374,16 @@ final readonly class AwsRekognitionService
      * Search users by image in AWS Rekognition.
      *
      * @param string $externalCollectionId
-     * @param UploadedFile $image
+     * @param ImageData $imageData
      * @param int|null $maxUsers
      *
      * @return SearchUsersByImageResultData
      */
     public function searchUsersByImage(
         string $externalCollectionId,
-        UploadedFile $image,
+        ImageData $imageData,
         ?int $maxUsers = null
     ): SearchUsersByImageResultData {
-        // Read the image bytes (base64 encoded).
-        $base64Image = base64_encode($image->getContent());
-
-        // Prepare the image data.
-        $imageData = new ImageData(
-            bytes: $base64Image,
-        );
-
         // Prepare the data to search users by image in AWS Rekognition.
         $searchUsersByImageData = new SearchUsersByImageData(
             collectionId: $externalCollectionId,

@@ -467,7 +467,7 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'AwsUser_model_activity',
+            'log_name' => ActivityLogName::AWS_USER_MODEL_ACTIVITY->value,
             'description' => 'AwsUser is updated!',
             'subject_id' => $awsUser->id,
             'subject_type' => AwsUser::class,

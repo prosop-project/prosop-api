@@ -6,7 +6,6 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Queue\SerializesModels;
 
 /**
@@ -19,9 +18,15 @@ final class SearchUsersByImageEvent
     /**
      * Create a new event instance.
      *
+     * @param int $userId
      * @param int $awsCollectionId
-     * @param UploadedFile $image
+     * @param string $imagePath
      * @param int|null $maxUsers
      */
-    public function __construct(public int $awsCollectionId, public UploadedFile $image, public ?int $maxUsers = null) {}
+    public function __construct(
+        public int $userId,
+        public int $awsCollectionId,
+        public string $imagePath,
+        public ?int $maxUsers = null
+    ) {}
 }

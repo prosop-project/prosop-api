@@ -3,26 +3,22 @@
 namespace Tests\API\Recognition;
 
 use App\Enums\ActivityEvent;
+use App\Enums\ActivityLogName;
 use App\Jobs\IndexFacesJob;
 use App\Jobs\SearchUsersByImageJob;
 use App\Models\AwsCollection;
 use App\Models\AwsFace;
 use App\Models\AwsUser;
 use App\Models\User;
-use Aws\Rekognition\RekognitionClient;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Queue;
-use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
-use Tests\TestSupport\MockRekognitionTrait;
 
 class RecognitionApiTest extends TestCase
 {
-    use MockRekognitionTrait;
-
     private string $token = "";
     private User|Authenticatable $user;
 
@@ -37,24 +33,6 @@ class RecognitionApiTest extends TestCase
             'password' => $myPassword,
         ];
         $this->token = $this->postJson(route('auth.login'), $existingUser)->json('data.token');
-    }
-
-    /**
-     * Mock the Rekognition client for testing in order to avoid making real requests.
-     *
-     * @param string $methodName
-     *
-     * @return void
-     */
-    private function mockRekognitionClient(string $methodName): void
-    {
-        $mockResponse = $this->mockRekognitionResponse($methodName);
-
-        $this->mock(RekognitionClient::class, function (MockInterface $mock) use($methodName, $mockResponse) {
-            $mock->shouldReceive($methodName)
-                ->once()
-                ->andReturn($mockResponse);
-        });
     }
 
     #[Test]
@@ -187,7 +165,7 @@ class RecognitionApiTest extends TestCase
                 ]
             ]);
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'AwsUser_model_activity',
+            'log_name' => ActivityLogName::AWS_USER_MODEL_ACTIVITY->value,
             'description' => 'AwsUser is created!',
             'subject_id' => AwsUser::query()->first()->id,
             'subject_type' => AwsUser::class,
@@ -234,7 +212,7 @@ class RecognitionApiTest extends TestCase
             'id' => $awsUser->id,
         ]);
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'AwsUser_model_activity',
+            'log_name' => ActivityLogName::AWS_USER_MODEL_ACTIVITY->value,
             'description' => 'AwsUser is deleted!',
             'subject_id' => $awsUser->id,
             'subject_type' => AwsUser::class,
@@ -453,11 +431,13 @@ class RecognitionApiTest extends TestCase
         /* SETUP */
         Queue::fake();
         $awsCollection = AwsCollection::factory()->create();
+        $user = User::factory()->create();
         $parameters = [
-            'search_strategies' => ['search_users_by_image'],
+            'analysis_operations' => ['search_users_by_image'],
             'aws_collection_id' => $awsCollection->id,
             'image' => UploadedFile::fake()->image('test.jpg'),
             'max_users' => 5,
+            'user_id' => $user->id,
         ];
 
         /* EXECUTE */
