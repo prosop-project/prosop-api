@@ -21,7 +21,7 @@ use Illuminate\Support\Arr;
  */
 final class SearchUsersByImageJob implements ShouldQueue
 {
-    use Queueable, PrepareImageDataTrait;
+    use PrepareImageDataTrait, Queueable;
 
     /**
      * Create a new job instance.

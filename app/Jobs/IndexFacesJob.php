@@ -22,7 +22,7 @@ use Illuminate\Support\Str;
  */
 final class IndexFacesJob implements ShouldQueue
 {
-    use Queueable, PrepareImageDataTrait;
+    use PrepareImageDataTrait, Queueable;
 
     /**
      * Create a new job instance.
