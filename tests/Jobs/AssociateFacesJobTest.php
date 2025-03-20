@@ -4,6 +4,7 @@ namespace Tests\Jobs;
 
 use App\Enums\ActivityEvent;
 use App\Enums\ActivityLogName;
+use App\Enums\ExternalUserStatus;
 use App\Jobs\AssociateFacesJob;
 use App\Models\AwsCollection;
 use App\Models\AwsUser;
@@ -37,7 +38,7 @@ class AssociateFacesJobTest extends TestCase
             'user_id' => $user->id,
             'aws_collection_id' => $awsCollection->id,
             'external_user_id' => $externalUserId,
-            'external_user_status' => 'UPDATING',
+            'external_user_status' => ExternalUserStatus::UPDATING->value,
         ]);
         $this->assertDatabaseHas('activity_log', [
             'log_name' => ActivityLogName::AWS_USER_MODEL_ACTIVITY->value,
