@@ -29,17 +29,17 @@ final class SearchCollectionRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'int', 'exists:users,id',],
-            'aws_collection_id' => ['required', 'int', 'exists:aws_collections,id',],
-            'analysis_operations' => ['required', 'array',],
-            'analysis_operations.*' => ['required', 'string', Rule::in(array_column(AnalysisOperation::cases(), 'value')),],
+            'user_id' => ['required', 'int', 'exists:users,id'],
+            'aws_collection_id' => ['required', 'int', 'exists:aws_collections,id'],
+            'analysis_operations' => ['required', 'array'],
+            'analysis_operations.*' => ['required', 'string', Rule::in(array_column(AnalysisOperation::cases(), 'value'))],
             'image' => [
                 'required',
                 'image',
                 'mimes:jpg,jpeg,png,heic,heif,webp',
                 'max:10240',
             ],
-            'max_users' => ['sometimes', 'nullable', 'int', 'min:1', 'max:20',],
+            'max_users' => ['sometimes', 'nullable', 'int', 'min:1', 'max:20'],
         ];
     }
 }
