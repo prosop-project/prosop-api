@@ -14,7 +14,7 @@ final readonly class CreateAwsSimilarityResultAction
     /**
      * Handle the action.
      *
-     * @param int $analysisRequestId
+     * @param int $analysisOperationId
      * @param float $similarity
      * @param int|null $awsUserId
      * @param array<string, mixed>|null $metadata
@@ -22,14 +22,14 @@ final readonly class CreateAwsSimilarityResultAction
      * @return AwsSimilarityResult
      */
     public function handle(
-        int $analysisRequestId,
+        int $analysisOperationId,
         float $similarity,
         ?int $awsUserId = null,
         ?array $metadata = null
     ): AwsSimilarityResult {
         // Create a new aws similarity result record in the database (aws_similarity_results table).
         return AwsSimilarityResult::query()->create([
-            'analysis_request_id' => $analysisRequestId,
+            'analysis_operation_id' => $analysisOperationId,
             'aws_user_id' => $awsUserId,
             'similarity' => $similarity,
             'metadata' => $metadata,

@@ -28,7 +28,7 @@ final readonly class UpdateAwsUserAndCreateSimilarityResultAction
      * Handle the action.
      *
      * @param AwsUser $awsUser
-     * @param int $analysisRequestId
+     * @param int $analysisOperationId
      * @param float $similarity
      * @param string|null $externalUserStatus
      *
@@ -36,16 +36,16 @@ final readonly class UpdateAwsUserAndCreateSimilarityResultAction
      */
     public function handle(
         AwsUser $awsUser,
-        int $analysisRequestId,
+        int $analysisOperationId,
         float $similarity,
         ?string $externalUserStatus,
     ): void {
-        DB::transaction(function () use ($awsUser, $analysisRequestId, $similarity, $externalUserStatus) {
+        DB::transaction(function () use ($awsUser, $analysisOperationId, $similarity, $externalUserStatus) {
             // Update the AWS user record in the database (aws_users table).
             $this->updateAwsUserAction->handle($awsUser, $externalUserStatus);
 
             // Create a new aws similarity result record in the database (aws_similarity_results table).
-            $this->createAwsSimilarityResultAction->handle($analysisRequestId, $similarity, $awsUser->id);
+            $this->createAwsSimilarityResultAction->handle($analysisOperationId, $similarity, $awsUser->id);
         });
     }
 }

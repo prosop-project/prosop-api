@@ -18,4 +18,6 @@ enum ActivityLogName: string
     case GRANT_PERMISSION_TO_ROLE_ACTIVITY = 'grant_permission_to_role_activity';
     case LOGIN_USER_ACTIVITY = 'login_user_activity';
     case REMOVE_ROLE_FROM_USER_ACTIVITY = 'remove_role_from_user_activity';
+    case ANALYSIS_OPERATION_MODEL_ACTIVITY = 'AnalysisOperation_model_activity';
+    case AWS_SIMILARITY_RESULT_MODEL_ACTIVITY = 'AwsSimilarityResult_model_activity';
 }

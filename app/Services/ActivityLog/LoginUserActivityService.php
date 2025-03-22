@@ -25,6 +25,8 @@ final readonly class LoginUserActivityService
             ->by(auth()->user())
             ->withProperties([
                 'user' => collect($user->getAttributes())->except(['password']),
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent(),
             ])
             ->event(ActivityEvent::LOGIN->value)
             ->log('User is logged in!');

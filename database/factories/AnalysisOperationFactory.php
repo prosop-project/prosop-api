@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\AnalysisOperation;
-use App\Models\AnalysisRequest;
+use App\Enums\AnalysisOperationName;
+use App\Models\AnalysisOperation;
 use App\Models\AwsCollection;
 use App\Models\User;
 use Database\Factories\Concerns\RefreshOnCreateTrait;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<AnalysisRequest>
+ * @extends Factory<AnalysisOperation>
  */
-final class AnalysisRequestFactory extends Factory
+final class AnalysisOperationFactory extends Factory
 {
     /**
-     * @use RefreshOnCreateTrait<AnalysisRequest>
+     * @use RefreshOnCreateTrait<AnalysisOperation>
      */
     use RefreshOnCreateTrait;
 
     /**
      * The name of the factory's corresponding model.
      *
-     * @var class-string<AnalysisRequest>
+     * @var class-string<AnalysisOperation>
      */
-    protected $model = AnalysisRequest::class;
+    protected $model = AnalysisOperation::class;
 
     /**
      * Define the model's default state.
@@ -41,7 +41,7 @@ final class AnalysisRequestFactory extends Factory
         return [
             'user_id' => $user->id,
             'aws_collection_id' => $awsCollection->id,
-            'operation' => AnalysisOperation::SEARCH_USERS_BY_IMAGE->value,
+            'operation' => AnalysisOperationName::SEARCH_USERS_BY_IMAGE->value,
         ];
     }
 }

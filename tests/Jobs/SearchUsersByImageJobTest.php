@@ -5,7 +5,7 @@ namespace Tests\Jobs;
 use App\Enums\ExternalUserStatus;
 use App\Enums\Status;
 use App\Jobs\SearchUsersByImageJob;
-use App\Models\AnalysisRequest;
+use App\Models\AnalysisOperation;
 use App\Models\AwsCollection;
 use App\Models\AwsUser;
 use Illuminate\Http\UploadedFile;
@@ -23,7 +23,7 @@ class SearchUsersByImageJobTest extends TestCase
         $methodName = 'searchUsersByImage';
         $this->mockRekognitionClient($methodName);
         $awsCollection = AwsCollection::factory()->create();
-        $analysisRequest = AnalysisRequest::factory()->create([
+        $analysisOperation = AnalysisOperation::factory()->create([
             'aws_collection_id' => $awsCollection->id,
             'metadata' => ['max_users' => 10],
         ]);
@@ -36,18 +36,18 @@ class SearchUsersByImageJobTest extends TestCase
         Storage::put($imageTempPath, $firstImage->getContent());
 
         /* EXECUTE */
-        SearchUsersByImageJob::dispatchSync($analysisRequest, $imageTempPath);
+        SearchUsersByImageJob::dispatchSync($analysisOperation, $imageTempPath);
 
         /* ASSERT */
         $awsUser->refresh();
         $this->assertEquals(ExternalUserStatus::ACTIVE->value, $awsUser->external_user_status);
         $this->assertDatabaseHas('aws_similarity_results', [
-            'analysis_request_id' => $analysisRequest->id,
+            'analysis_operation_id' => $analysisOperation->id,
             'aws_user_id' => $awsUser->id,
             'similarity' => 99.88,
         ]);
-        $this->assertDatabaseHas('analysis_requests', [
-            'id' => $analysisRequest->id,
+        $this->assertDatabaseHas('analysis_operations', [
+            'id' => $analysisOperation->id,
             'status' => Status::COMPLETED->value,
         ]);
         // Clean temp storage if anything left

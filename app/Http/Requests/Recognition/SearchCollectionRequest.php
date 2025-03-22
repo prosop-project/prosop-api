@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Recognition;
 
-use App\Enums\AnalysisOperation;
+use App\Enums\AnalysisOperationName;
 use App\Http\Requests\BaseRequest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
@@ -32,7 +32,11 @@ final class SearchCollectionRequest extends BaseRequest
             'user_id' => ['required', 'int', 'exists:users,id'],
             'aws_collection_id' => ['required', 'int', 'exists:aws_collections,id'],
             'analysis_operations' => ['required', 'array'],
-            'analysis_operations.*' => ['required', 'string', Rule::in(array_column(AnalysisOperation::cases(), 'value'))],
+            'analysis_operations.*' => [
+                'required',
+                'string',
+                Rule::in(array_column(AnalysisOperationName::cases(), 'value'))
+            ],
             'image' => [
                 'required',
                 'image',

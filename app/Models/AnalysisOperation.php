@@ -6,7 +6,7 @@ namespace App\Models;
 
 use App\Models\Traits\LogsActivityTrait;
 use Carbon\Carbon;
-use Database\Factories\AnalysisRequestFactory;
+use Database\Factories\AnalysisOperationFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,11 +27,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read AwsCollection $awsCollection
  * @property-read Collection<int, AwsSimilarityResult> $awsSimilarityResults
  *
- * @class AnalysisRequest
+ * @class AnalysisOperationName
  */
-final class AnalysisRequest extends Model
+final class AnalysisOperation extends Model
 {
-    /** @use HasFactory<AnalysisRequestFactory> */
+    /** @use HasFactory<AnalysisOperationFactory> */
     use HasFactory, LogsActivityTrait;
 
     /**
@@ -49,7 +49,7 @@ final class AnalysisRequest extends Model
     }
 
     /**
-     * Get the user who owns this analysis request.
+     * Get the user who owns this analysis operation.
      *
      * @return BelongsTo<User, covariant $this>
      */
@@ -59,7 +59,7 @@ final class AnalysisRequest extends Model
     }
 
     /**
-     * Get the AWS collection that this analysis request belongs to.
+     * Get the AWS collection that this analysis operation belongs to.
      *
      * @return BelongsTo<AwsCollection, covariant $this>
      */
@@ -69,7 +69,7 @@ final class AnalysisRequest extends Model
     }
 
     /**
-     * Get the AWS similarity results for this analysis request.
+     * Get the AWS similarity results for this analysis operation.
      *
      * @return HasMany<AwsSimilarityResult, covariant $this>
      */

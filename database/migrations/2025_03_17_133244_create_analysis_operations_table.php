@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('analysis_requests', function (Blueprint $table) {
+        Schema::create('analysis_operations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')
                 ->comment('The user who requested the analysis')
@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('analysis_requests');
+        Schema::dropIfExists('analysis_operations');
     }
 };

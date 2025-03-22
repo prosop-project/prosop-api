@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ActivityLog\ActivityLogController;
+use App\Http\Controllers\Analysis\AnalysisController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Link\LinkController;
 use App\Http\Controllers\Permission\PermissionController;
@@ -161,5 +162,26 @@ Route::prefix('recognition')->name('recognition.')->group(function () {
      */
     Route::prefix('search')->group(function () {
         Route::middleware(['throttle:5,1'])->post('/collection', [AwsRekognitionController::class, 'searchCollection'])->name('search.collection');
+    });
+});
+
+/*
+ |--------------------------------------
+ | Endpoints for managing analysis operations.
+ |--------------------------------------
+ */
+Route::prefix('analysis')->name('analysis.')->group(function () {
+    Route::prefix('{user_id}')->group(function () {
+        Route::get('/', [AnalysisController::class, 'getUserAnalysisOperations'])->name('operations.user');
+
+        /*
+         * Endpoints for managing analysis operations and aws similarity results for a specific analysis operation.
+         */
+        Route::prefix('analysis_operation/{analysis_operation_id}')->group(function () {
+            Route::delete('/', [AnalysisController::class, 'deleteAnalysisOperation'])
+                ->name('delete.operation');
+            Route::delete('/aws_similarity_result/{aws_similarity_result_id}', [AnalysisController::class, 'deleteAwsSimilarityResult'])
+                ->name('delete.aws.similarity.result');
+        });
     });
 });

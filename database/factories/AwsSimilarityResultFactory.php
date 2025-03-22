@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\AnalysisRequest;
+use App\Models\AnalysisOperation;
 use App\Models\AwsSimilarityResult;
 use App\Models\AwsUser;
 use Database\Factories\Concerns\RefreshOnCreateTrait;
@@ -34,11 +34,11 @@ final class AwsSimilarityResultFactory extends Factory
      */
     public function definition(): array
     {
-        $analysisRequest = AnalysisRequest::factory()->create();
+        $analysisOperation = AnalysisOperation::factory()->create();
         $awsUser = AwsUser::factory()->create();
 
         return [
-            'analysis_request_id' => $analysisRequest->id,
+            'analysis_operation_id' => $analysisOperation->id,
             'similarity' => fake()->randomFloat(2, 0, 100),
             'aws_user_id' => $awsUser->id,
         ];

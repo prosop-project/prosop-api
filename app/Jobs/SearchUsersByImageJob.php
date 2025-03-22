@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Actions\Analysis\UpdateAnalysisRequestAction;
+use App\Actions\Analysis\UpdateAnalysisOperationAction;
 use App\Actions\Analysis\UpdateAwsUserAndCreateSimilarityResultAction;
 use App\Enums\Status;
-use App\Models\AnalysisRequest;
+use App\Models\AnalysisOperation;
 use App\Models\AwsCollection;
 use App\Models\AwsUser;
 use App\Services\Recognition\AwsRekognitionService;
@@ -26,28 +26,28 @@ final class SearchUsersByImageJob implements ShouldQueue
     /**
      * Create a new job instance.
      *
-     * @param AnalysisRequest $analysisRequest
+     * @param AnalysisOperation $analysisOperation
      * @param string $imagePath
      */
-    public function __construct(protected AnalysisRequest $analysisRequest, protected string $imagePath) {}
+    public function __construct(protected AnalysisOperation $analysisOperation, protected string $imagePath) {}
 
     /**
      * Execute the job.
      *
      * @param AwsRekognitionService $awsRekognitionService
      * @param UpdateAwsUserAndCreateSimilarityResultAction $updateAwsUserAndCreateSimilarityResultAction
-     * @param UpdateAnalysisRequestAction $updateAnalysisRequestAction
+     * @param UpdateAnalysisOperationAction $updateAnalysisOperationAction
      *
      * @return void
      */
     public function handle(
         AwsRekognitionService $awsRekognitionService,
         UpdateAwsUserAndCreateSimilarityResultAction $updateAwsUserAndCreateSimilarityResultAction,
-        UpdateAnalysisRequestAction $updateAnalysisRequestAction,
+        UpdateAnalysisOperationAction $updateAnalysisOperationAction,
     ): void {
-        // Retrieve the AWS collection id and max users from the analysis request.
-        $awsCollectionId = $this->analysisRequest->aws_collection_id;
-        $maxUsers = Arr::get($this->analysisRequest->metadata, 'max_users');
+        // Retrieve the AWS collection id and max users from the analysis operation.
+        $awsCollectionId = $this->analysisOperation->aws_collection_id;
+        $maxUsers = Arr::get($this->analysisOperation->metadata, 'max_users');
 
         // Retrieve the AWS collection and external collection id.
         $awsCollection = AwsCollection::query()->findOrFail($awsCollectionId);
@@ -84,14 +84,14 @@ final class SearchUsersByImageJob implements ShouldQueue
             // Update the AWS user record in the database (aws_users table) and create a new aws similarity result record in the database (aws_similarity_results table).
             $updateAwsUserAndCreateSimilarityResultAction->handle(
                 $awsUser,
-                $this->analysisRequest->id,
+                $this->analysisOperation->id,
                 $match->similarity,
                 $externalUserStatus
             );
         }
 
-        // Update the analysis request status to completed.
-        $updateAnalysisRequestAction->handle($this->analysisRequest, Status::COMPLETED->value);
+        // Update the analysis operation status to completed.
+        $updateAnalysisOperationAction->handle($this->analysisOperation, Status::COMPLETED->value);
 
         // todo notify user that analysis is done with a redirect link maybe where analysis page will be opened with new analysis result
     }

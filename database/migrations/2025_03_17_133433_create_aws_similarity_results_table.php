@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('aws_similarity_results', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('analysis_request_id')->constrained();
+            $table->foreignId('analysis_operation_id')->constrained();
             $table->foreignId('aws_user_id')
                 ->nullable()
-                ->comment('The user who is found by the analysis request')
+                ->comment('The user who is found by the analysis operation')
                 ->constrained();
             $table->foreignId('aws_face_id')
                 ->nullable()
-                ->comment('The face that is found by the analysis request')
+                ->comment('The face that is found by the analysis operation')
                 ->constrained();
             $table->decimal('similarity', 5, 2);
             $table->jsonb('metadata')
@@ -29,7 +29,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Indexes
-            $table->index('analysis_request_id');
+            $table->index('analysis_operation_id');
             $table->index('aws_user_id');
             $table->index('aws_face_id');
         });

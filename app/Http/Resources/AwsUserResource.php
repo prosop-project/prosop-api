@@ -23,6 +23,7 @@ final class AwsUserResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
+            'user' => new UserResource($this->whenLoaded('user')),
             'aws_collection_id' => $this->aws_collection_id,
             'external_user_id' => $this->external_user_id,
             'external_user_status' => $this->external_user_status,

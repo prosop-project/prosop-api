@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
- * @property int $analysis_request_id
+ * @property int $analysis_operation_id
  * @property int|null $aws_user_id
  * @property int|null $aws_face_id
  * @property float $similarity
@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
- * @property-read AnalysisRequest $analysisRequest
+ * @property-read AnalysisOperation $analysisOperation
  * @property-read AwsUser $awsUser
  * @property-read AwsFace $awsFace
  *
@@ -48,13 +48,13 @@ final class AwsSimilarityResult extends Model
     }
 
     /**
-     * Get the analysis request that this AWS similarity result belongs to.
+     * Get the analysis operation that this AWS similarity result belongs to.
      *
-     * @return BelongsTo<AnalysisRequest, covariant $this>
+     * @return BelongsTo<AnalysisOperation, covariant $this>
      */
-    public function analysisRequest(): BelongsTo
+    public function analysisOperation(): BelongsTo
     {
-        return $this->belongsTo(AnalysisRequest::class);
+        return $this->belongsTo(AnalysisOperation::class);
     }
 
     /**

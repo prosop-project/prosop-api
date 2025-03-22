@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Recognition;
 
-use App\Enums\AnalysisOperation;
+use App\Enums\AnalysisOperationName;
 use App\Events\ProcessFaceEvent;
 use App\Events\SearchUsersByImageEvent;
 use App\Models\AwsCollection;
@@ -360,7 +360,7 @@ final readonly class AwsRekognitionService
         $analysisOperations = Arr::get($validatedRequest, 'analysis_operations');
 
         // Here we can control which event to fire based on the request. For now, we only have search users by image.
-        if (in_array(AnalysisOperation::SEARCH_USERS_BY_IMAGE->value, $analysisOperations, true)) {
+        if (in_array(AnalysisOperationName::SEARCH_USERS_BY_IMAGE->value, $analysisOperations, true)) {
             // Generate a temporary path for the image
             $tempImagePath = 'temp/' . Str::uuid() . '.' . $image->getClientOriginalExtension();
             // Store the image in the temporary path

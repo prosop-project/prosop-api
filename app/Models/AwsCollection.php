@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property-read Collection<int, AwsUser> $awsUsers
  * @property-read Collection<int, AwsFace> $awsFaces
- * @property-read Collection<int, AnalysisRequest> $analysisRequests
+ * @property-read Collection<int, AnalysisOperation> $analysisOperations
  *
  * @class AwsCollection
  */
@@ -67,12 +67,12 @@ final class AwsCollection extends Model
     }
 
     /**
-     * Get the analysis requests that belong to this AWS collection.
+     * Get the analysis operations that belong to this AWS collection.
      *
-     * @return HasMany<AnalysisRequest, covariant $this>
+     * @return HasMany<AnalysisOperation, covariant $this>
      */
-    public function analysisRequests(): HasMany
+    public function analysisOperations(): HasMany
     {
-        return $this->hasMany(AnalysisRequest::class);
+        return $this->hasMany(AnalysisOperation::class);
     }
 }

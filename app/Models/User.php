@@ -36,7 +36,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property-read Collection<int, Subscription> $subscribers
  * @property-read Collection<int, AwsUser> $awsUsers
  * @property-read Collection<int, AwsFace> $awsFaces
- * @property-read Collection<int, AnalysisRequest> $analysisRequests
+ * @property-read Collection<int, AnalysisOperation> $analysisOperations
  * @property-read Collection<int, Role> $roles
  *
  * @class User
@@ -123,13 +123,13 @@ final class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Get the user's analysis requests (User has many analysis requests).
+     * Get the user's analysis operations (User has many analysis operations).
      *
-     * @return HasMany<AnalysisRequest, covariant $this>
+     * @return HasMany<AnalysisOperation, covariant $this>
      */
-    public function analysisRequests(): HasMany
+    public function analysisOperations(): HasMany
     {
-        return $this->hasMany(AnalysisRequest::class);
+        return $this->hasMany(AnalysisOperation::class);
     }
 
     /**
