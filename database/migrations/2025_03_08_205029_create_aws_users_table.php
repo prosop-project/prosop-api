@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained();
             $table->foreignId('aws_collection_id')->constrained();
-            $table->string('external_user_id');
-            $table->string('external_user_status')->nullable();
+            $table->string('external_user_id')->comment('The user id in the external aws system');
+            $table->string('external_user_status')->nullable()
+                ->comment('The user status in the external aws system');
             $table->timestamps();
 
             // Indexes

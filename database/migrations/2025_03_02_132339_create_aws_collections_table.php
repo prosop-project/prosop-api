@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('external_collection_id')->unique();
             $table->string('external_collection_arn')->unique();
-            $table->json('tags')->nullable();
-            $table->string('face_model_version')->nullable();
+            $table->json('tags')->nullable()
+                ->comment('Tags attached to collection. see https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-rekognition-2016-06-27.html#createcollection');
+            $table->string('face_model_version')->nullable()
+                ->comment('Version number of the face detection model associated with the collection');
             $table->timestamps();
         });
     }

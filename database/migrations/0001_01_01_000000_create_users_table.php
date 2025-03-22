@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('name')->nullable();
             $table->string('username')->unique();
-            $table->string('description')->nullable();
+            $table->string('description')->nullable()->comment('User short description - bio');
             $table->string('password');
-            $table->unsignedBigInteger('views')->default(0);
+            $table->unsignedBigInteger('views')->default(0)->comment('Number of profile views');
             $table->string('avatar')->nullable();
             $table->timestamp('avatar_updated_at')->nullable();
             $table->string('email')->unique()->nullable();

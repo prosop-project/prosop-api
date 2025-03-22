@@ -19,7 +19,8 @@ return new class extends Migration
             $table->foreignId('aws_collection_id')->constrained();
             $table->string('operation')
                 ->comment('The operation to be performed on the collection e.g. search_users_by_image');
-            $table->string('status')->nullable();
+            $table->string('status')->nullable()
+                ->comment('The status of the operation e.g. pending, completed');
             $table->jsonb('metadata')
                 ->nullable()
                 ->comment('Additional metadata for the operation e.g. max_users');

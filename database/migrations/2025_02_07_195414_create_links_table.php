@@ -15,10 +15,14 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained();
             $table->string('type')->nullable();
-            $table->string('description')->nullable();
-            $table->string('value')->nullable();
-            $table->boolean('is_visible')->default(true);
-            $table->unsignedBigInteger('click_count')->default(0);
+            $table->string('description')->nullable()
+                ->comment('A short description of the link e.g. instagram, x etc');
+            $table->string('value')->nullable()
+                ->comment('The actual link value e.g. https://instagram.com/username');
+            $table->boolean('is_visible')->default(true)
+                ->comment('Whether the link is visible to the public, can be toggled by the user');
+            $table->unsignedBigInteger('click_count')->default(0)
+                ->comment('The amount of times the link has been clicked');
             $table->timestamps();
 
             // Indexes - Postgres requires indexes for foreign keys to be assigned manually.

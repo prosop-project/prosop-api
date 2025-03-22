@@ -19,10 +19,12 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained();
             $table->foreignId('aws_user_id')->nullable()->constrained();
             $table->foreignId('aws_collection_id')->constrained();
-            $table->uuid('external_face_id');
-            $table->decimal('confidence', 5, 2);
-            $table->string('external_image_id')->nullable(); // On AWS side, it is also called "ExternalImageId", it is set by us.
-            $table->uuid('image_id'); // On AWS side, it is also called "ImageId", it is set by AWS.
+            $table->uuid('external_face_id')->comment('This is the face id that is set by aws.');
+            $table->decimal('confidence', 5, 2)
+                ->comment('The confidence level of detection contains a face.');
+            $table->string('external_image_id')->nullable()
+                ->comment('The external image id that is set by us in order to distinguish the faces by the image.');
+            $table->uuid('image_id')->comment('The image uuid that is set by aws for the image.');
             $table->timestamps();
 
             // Indexes

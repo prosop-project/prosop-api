@@ -22,7 +22,8 @@ return new class extends Migration
                 ->nullable()
                 ->comment('The face that is found by the analysis operation')
                 ->constrained();
-            $table->decimal('similarity', 5, 2);
+            $table->decimal('similarity', 5, 2)
+                ->comment('The similarity of given image face with found user face');
             $table->jsonb('metadata')
                 ->nullable()
                 ->comment('Additional metadata for the similarity result e.g. external_user_status on aws side');
