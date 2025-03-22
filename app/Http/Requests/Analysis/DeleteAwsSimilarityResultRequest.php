@@ -33,9 +33,9 @@ final class DeleteAwsSimilarityResultRequest extends BaseRequest
          * If the user is an admin, they can delete the aws similarity result, regardless of the owner.
          */
         return (
-                $userId === $analysisOperation->user_id
-                && $analysisOperationId === $awsSimilarityResult->analysis_operation_id
-            ) || is_admin();
+            $userId === $analysisOperation->user_id
+            && $analysisOperationId === $awsSimilarityResult->analysis_operation_id
+        ) || is_admin();
     }
 
     /**

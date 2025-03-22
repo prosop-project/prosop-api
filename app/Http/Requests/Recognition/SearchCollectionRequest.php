@@ -35,7 +35,7 @@ final class SearchCollectionRequest extends BaseRequest
             'analysis_operations.*' => [
                 'required',
                 'string',
-                Rule::in(array_column(AnalysisOperationName::cases(), 'value'))
+                Rule::in(array_column(AnalysisOperationName::cases(), 'value')),
             ],
             'image' => [
                 'required',

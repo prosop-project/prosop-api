@@ -31,7 +31,7 @@ final class GetUserAnalysisOperationsRequest extends BaseRequest
             'operation' => [
                 'nullable',
                 'string',
-                Rule::in(array_column(AnalysisOperationName::cases(), 'value'))
+                Rule::in(array_column(AnalysisOperationName::cases(), 'value')),
             ],
             'status' => ['nullable', 'string'],
         ];
