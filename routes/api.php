@@ -171,7 +171,7 @@ Route::prefix('recognition')->name('recognition.')->group(function () {
  |--------------------------------------
  */
 Route::prefix('analysis')->name('analysis.')->group(function () {
-    Route::prefix('{user_id}')->group(function () {
+    Route::prefix('{public_uuid}')->group(function () {
         Route::get('/', [AnalysisController::class, 'getUserAnalysisOperations'])->name('operations.user');
 
         /*

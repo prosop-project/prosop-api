@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
 /**
  * GetUserAnalysisOperationsRequest is the form request that handles the validation of the get user analysis operations request.
  *
- * @property int $user_id
+ * @property string $public_uuid
  * @property int|null $aws_collection_id
  * @property string|null $operation
  * @property string|null $status
@@ -26,7 +26,7 @@ final class GetUserAnalysisOperationsRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'int', 'exists:users,id'],
+            'public_uuid' => ['required', 'string', 'exists:users,public_uuid'],
             'aws_collection_id' => ['nullable', 'int', 'exists:aws_collections,id'],
             'operation' => [
                 'nullable',
@@ -42,9 +42,9 @@ final class GetUserAnalysisOperationsRequest extends BaseRequest
      */
     protected function prepareForValidation(): void
     {
-        // Merge the user_id from the route parameters, ensuring it is included in the request retrieved from route parameters
+        // Merge the public_uuid from the route parameters, ensuring it is included in the request retrieved from route parameters
         $this->merge([
-            'user_id' => $this->route('user_id'),
+            'public_uuid' => $this->route('public_uuid'),
         ]);
     }
 }

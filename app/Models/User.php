@@ -19,6 +19,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
  * @property int $id
+ * @property string $public_uuid
  * @property string|null $name
  * @property string $username
  * @property string|null $description

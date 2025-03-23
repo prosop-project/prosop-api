@@ -31,7 +31,7 @@ final readonly class RegisterUserAction
             'name' => $request->name,
             'description' => $request->description,
             'email' => $request->email,
-        ]);
+        ])->refresh();
 
         // Generate a token for the user.
         $token = JWTAuth::fromUser($user);

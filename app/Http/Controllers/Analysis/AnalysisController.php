@@ -13,6 +13,7 @@ use App\Http\Requests\Analysis\GetUserAnalysisOperationsRequest;
 use App\Http\Resources\GenericResponseResource;
 use App\Http\Resources\UserAnalysisOperationsResource;
 use App\Models\AnalysisOperation;
+use App\Models\User;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
@@ -24,12 +25,15 @@ final readonly class AnalysisController extends Controller
      * Get all analysis operations for the given user.
      *
      * @param GetUserAnalysisOperationsRequest $request
-     * @param int $userId
+     * @param string $publicUuid
      *
      * @return AnonymousResourceCollection
      */
-    public function getUserAnalysisOperations(GetUserAnalysisOperationsRequest $request, int $userId): AnonymousResourceCollection
+    public function getUserAnalysisOperations(GetUserAnalysisOperationsRequest $request, string $publicUuid): AnonymousResourceCollection
     {
+        // Fetch the user from the public uuid, user id will be used internally.
+        $userId = User::query()->where('public_uuid', $publicUuid)->firstOrFail(['id'])->id;
+
         // Query the analysis operations for the given user including the aws similarity results where aws user and user are eager loaded
         $query = AnalysisOperation::query()
             ->where('user_id', $userId)
@@ -60,7 +64,7 @@ final readonly class AnalysisController extends Controller
      * Delete an analysis operation along with its aws similarity results.
      *
      * @param DeleteAnalysisOperationRequest $_
-     * @param int $userId
+     * @param string $publicUuid
      * @param int $analysisOperationId
      * @param DeleteAnalysisOperationAction $deleteAnalysisOperationAction
      *
@@ -68,7 +72,7 @@ final readonly class AnalysisController extends Controller
      */
     public function deleteAnalysisOperation(
         DeleteAnalysisOperationRequest $_,
-        int $userId,
+        string $publicUuid,
         int $analysisOperationId,
         DeleteAnalysisOperationAction $deleteAnalysisOperationAction
     ): GenericResponseResource {
@@ -81,7 +85,7 @@ final readonly class AnalysisController extends Controller
      * Delete an aws similarity result.
      *
      * @param DeleteAwsSimilarityResultRequest $_
-     * @param int $userId
+     * @param string $publicUuid
      * @param int $analysisOperationId
      * @param int $similarityResultId
      * @param DeleteAwsSimilarityResultAction $deleteAwsSimilarityResultAction
@@ -90,7 +94,7 @@ final readonly class AnalysisController extends Controller
      */
     public function deleteAwsSimilarityResult(
         DeleteAwsSimilarityResultRequest $_,
-        int $userId,
+        string $publicUuid,
         int $analysisOperationId,
         int $similarityResultId,
         DeleteAwsSimilarityResultAction $deleteAwsSimilarityResultAction

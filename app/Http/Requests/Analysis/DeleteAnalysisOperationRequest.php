@@ -6,6 +6,7 @@ namespace App\Http\Requests\Analysis;
 
 use App\Http\Requests\BaseRequest;
 use App\Models\AnalysisOperation;
+use App\Models\User;
 
 /**
  * DeleteAnalysisOperationRequest is the form request that handles the validation of the delete analysis operation request.
@@ -14,12 +15,14 @@ use App\Models\AnalysisOperation;
  */
 final class DeleteAnalysisOperationRequest extends BaseRequest
 {
+    private User $user;
+
     /**
      * {@inheritDoc}
      */
     public function authorize(): bool
     {
-        $userId = (int) $this->route('user_id');
+        $userId = $this->user->id;
         $analysisOperationId = (int) $this->route('analysis_operation_id');
 
         // Retrieve the analysis operation, and aws similarity result from the route parameters
@@ -37,5 +40,19 @@ final class DeleteAnalysisOperationRequest extends BaseRequest
     public function rules(): array
     {
         return []; // No validation needed for deletion
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function prepareForValidation(): void
+    {
+        // Fetch the user from the public uuid
+        $this->user = User::query()->where('public_uuid', $this->route('public_uuid'))->firstOrFail();
+
+        // Merge the user id into the request
+        $this->merge([
+            'user_id' => $this->user->id
+        ]);
     }
 }

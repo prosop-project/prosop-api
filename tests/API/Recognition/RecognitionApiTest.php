@@ -437,7 +437,7 @@ class RecognitionApiTest extends TestCase
             'aws_collection_id' => $awsCollection->id,
             'image' => UploadedFile::fake()->image('test.jpg'),
             'max_users' => 5,
-            'user_id' => $user->id,
+            'public_uuid' => $user->public_uuid,
         ];
 
         /* EXECUTE */

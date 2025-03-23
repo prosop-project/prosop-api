@@ -13,7 +13,7 @@ use Illuminate\Validation\Rule;
  * SearchCollectionRequest is the form request that handles the validation of the searchUsersByImage request,
  * and other searches that may be added in the future.
  *
- * @property int $user_id
+ * @property string $public_uuid
  * @property int $aws_collection_id
  * @property array<int, string> $analysis_operations
  * @property UploadedFile $image
@@ -29,7 +29,7 @@ final class SearchCollectionRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'int', 'exists:users,id'],
+            'public_uuid' => ['required', 'string', 'exists:users,public_uuid'],
             'aws_collection_id' => ['required', 'int', 'exists:aws_collections,id'],
             'analysis_operations' => ['required', 'array'],
             'analysis_operations.*' => [

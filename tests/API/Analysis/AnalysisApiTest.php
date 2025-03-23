@@ -27,7 +27,7 @@ class AnalysisApiTest extends TestCase
             'operation' => AnalysisOperationName::SEARCH_USERS_BY_IMAGE->value,
         ]);
         $params = [
-            'user_id' => $user->id,
+            'public_uuid' => $user->public_uuid,
         ];
 
         /* EXECUTE */
@@ -58,7 +58,7 @@ class AnalysisApiTest extends TestCase
             'operation' => AnalysisOperationName::SEARCH_USERS_BY_IMAGE->value,
         ]);
         $params = [
-            'user_id' => $user->id,
+            'public_uuid' => $user->public_uuid,
             'operation' => 'wrong_operation',
         ];
 
@@ -98,7 +98,7 @@ class AnalysisApiTest extends TestCase
             'aws_user_id' => $secondAwsUser->id,
         ]);
         $params = [
-            'user_id' => $userWhoRequestedAnalysis->id,
+            'public_uuid' => $userWhoRequestedAnalysis->public_uuid,
         ];
 
         /* EXECUTE */
@@ -173,7 +173,7 @@ class AnalysisApiTest extends TestCase
             'aws_user_id' => $secondAwsUser->id,
         ]);
         $params = [
-            'user_id' => $userWhoRequestedAnalysis->id,
+            'public_uuid' => $userWhoRequestedAnalysis->public_uuid,
             'aws_collection_id' => $awsCollection->id,
             'operation' => AnalysisOperationName::SEARCH_USERS_BY_IMAGE->value,
         ];
@@ -250,7 +250,7 @@ class AnalysisApiTest extends TestCase
             'aws_user_id' => $secondAwsUser->id,
         ]);
         $params = [
-            'user_id' => $userWhoRequestedAnalysis->id,
+            'public_uuid' => $userWhoRequestedAnalysis->public_uuid,
             'analysis_operation_id' => $analysisOperation->id,
         ];
 
@@ -319,7 +319,7 @@ class AnalysisApiTest extends TestCase
             'aws_user_id' => $awsUser->id,
         ]);
         $params = [
-            'user_id' => $userWhoRequestedAnalysis->id,
+            'public_uuid' => $userWhoRequestedAnalysis->public_uuid,
             'analysis_operation_id' => $analysisOperation->id,
             'aws_similarity_result_id' => $awsSimilarityResult->id,
         ];
@@ -370,7 +370,7 @@ class AnalysisApiTest extends TestCase
             'aws_user_id' => $awsUser->id,
         ]);
         $params = [
-            'user_id' => $userWhoRequestedAnalysis->id,
+            'public_uuid' => $userWhoRequestedAnalysis->public_uuid,
             'analysis_operation_id' => $analysisOperation->id,
             'aws_similarity_result_id' => $awsSimilarityResult->id,
         ];
@@ -418,7 +418,7 @@ class AnalysisApiTest extends TestCase
             'aws_user_id' => $secondAwsUser->id,
         ]);
         $params = [
-            'user_id' => $userWhoRequestedAnalysis->id,
+            'public_uuid' => $userWhoRequestedAnalysis->public_uuid,
             'analysis_operation_id' => $analysisOperation->id,
         ];
 
