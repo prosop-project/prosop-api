@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('subscriber_id')->constrained('users');
+            $table->foreignId('user_id')->comment('subscribed to')->constrained('users');
+            $table->foreignId('subscriber_id')->comment('subscribed by')->constrained('users');
             $table->timestamps();
 
             // Indexes

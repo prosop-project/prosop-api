@@ -19,6 +19,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
  * @property int $id
+ * @property string $public_uuid
  * @property string|null $name
  * @property string $username
  * @property string|null $description
@@ -34,6 +35,9 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property-read Collection<int, Link> $links
  * @property-read Collection<int, Subscription> $subscriptions
  * @property-read Collection<int, Subscription> $subscribers
+ * @property-read Collection<int, AwsUser> $awsUsers
+ * @property-read Collection<int, AwsFace> $awsFaces
+ * @property-read Collection<int, AnalysisOperation> $analysisOperations
  * @property-read Collection<int, Role> $roles
  *
  * @class User
@@ -97,6 +101,36 @@ final class User extends Authenticatable implements JWTSubject
     public function subscribers(): HasMany
     {
         return $this->hasMany(Subscription::class, 'user_id');
+    }
+
+    /**
+     * Get the user's AWS users (User has many AWS users).
+     *
+     * @return HasMany<AwsUser, covariant $this>
+     */
+    public function awsUsers(): HasMany
+    {
+        return $this->hasMany(AwsUser::class);
+    }
+
+    /**
+     * Get the user's aws faces (User has many AWS faces).
+     *
+     * @return HasMany<AwsFace, covariant $this>
+     */
+    public function awsFaces(): HasMany
+    {
+        return $this->hasMany(AwsFace::class);
+    }
+
+    /**
+     * Get the user's analysis operations (User has many analysis operations).
+     *
+     * @return HasMany<AnalysisOperation, covariant $this>
+     */
+    public function analysisOperations(): HasMany
+    {
+        return $this->hasMany(AnalysisOperation::class);
     }
 
     /**

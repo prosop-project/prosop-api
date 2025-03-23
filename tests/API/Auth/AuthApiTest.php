@@ -48,6 +48,38 @@ class AuthApiTest extends TestCase
     }
 
     #[Test]
+    public function it_tests_if_public_uuid_is_set_successfully_request()
+    {
+        /* SETUP */
+        $newUser = [
+            'name' => fake()->name,
+            'username' => fake()->userName,
+            'description' => fake()->sentence,
+            'password' => fake()->password(8, 32),
+            'email' => fake()->email,
+        ];
+
+        /* EXECUTE */
+        $response = $this->postJson(route('auth.register', $newUser));
+
+        /* ASSERT */
+        $response->assertCreated()
+            ->assertJson([
+                'data' => [
+                    'user' => [
+                        'name' => $newUser['name'],
+                        'public_uuid' => Arr::get($response, 'data.user.public_uuid'),
+                        'username' => $newUser['username'],
+                        'description' => $newUser['description'],
+                        'email' => $newUser['email'],
+                    ],
+                    'message' => 'User registered successfully!',
+                    'token' => Arr::get($response, 'data.token')
+                ]
+            ]);
+    }
+
+    #[Test]
     public function it_tests_validations_for_register_request()
     {
         /* SETUP */

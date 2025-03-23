@@ -41,3 +41,27 @@ if (! function_exists('is_admin')) {
         return auth()->check() && auth()->user()?->hasRole('admin');
     }
 }
+
+/**
+ * Generate external id for AWS Rekognition by combining the config values (reference_prefix, region) and the user id.
+ */
+if (! function_exists('generate_external_id')) {
+    function generate_external_id(int $userId, ?bool $includeRegion = false, ?array $extraComponents = []): string
+    {
+        // The core components of the external id.
+        $components = [
+            config('aws-rekognition.reference_prefix'),
+            $userId,
+        ];
+
+        // Optionally include the region (e.g. for external_image_id).
+        if ($includeRegion) {
+            $components[] = config('aws-rekognition.region');
+        }
+
+        // Merge extra components if provided.
+        $components = array_merge($components, $extraComponents);
+
+        return implode('-', $components);
+    }
+}

@@ -26,5 +26,10 @@
         <env name="DB_USERNAME" value="sail"/>
         <env name="DB_PASSWORD" value="password"/>
         <env name="JWT_SECRET" value=""/>
+        <env name="AWS_ACCESS_KEY_ID" value=""/>
+        <env name="AWS_SECRET_ACCESS_KEY" value=""/>
+        <env name="AWS_REKOGNITION_REFERENCE_PREFIX" value="rekognition-test-v1"/>
+        <env name="AWS_USER_MATCH_THRESHOLD" value="80"/>
+        <env name="AWS_SEARCH_RESULT_MAX_USERS" value="5"/>
     </php>
 </phpunit>
