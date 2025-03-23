@@ -52,7 +52,7 @@ final class DeleteAnalysisOperationRequest extends BaseRequest
 
         // Merge the user id into the request
         $this->merge([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
     }
 }
