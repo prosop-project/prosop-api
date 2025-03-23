@@ -15,6 +15,7 @@ use App\Http\Resources\UserAnalysisOperationsResource;
 use App\Models\AnalysisOperation;
 use App\Models\User;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Arr;
 
 /**
  * @class AnalysisController
@@ -31,8 +32,8 @@ final readonly class AnalysisController extends Controller
      */
     public function getUserAnalysisOperations(GetUserAnalysisOperationsRequest $request, string $publicUuid): AnonymousResourceCollection
     {
-        // Fetch the user from the public uuid, user id will be used internally.
-        $userId = User::query()->where('public_uuid', $publicUuid)->firstOrFail(['id'])->id;
+        // Fetch the user_id from the validated request, user id will be used internally.
+        $userId = Arr::get($request->validated(), 'user_id');
 
         // Query the analysis operations for the given user including the aws similarity results where aws user and user are eager loaded
         $query = AnalysisOperation::query()

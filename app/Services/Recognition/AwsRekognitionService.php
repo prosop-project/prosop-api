@@ -353,14 +353,11 @@ final readonly class AwsRekognitionService
     public function search(array $validatedRequest): void
     {
         // Extract the required values.
-        $publicUuid = Arr::get($validatedRequest, 'public_uuid');
+        $userId = Arr::get($validatedRequest, 'user_id');
         $awsCollectionId = Arr::get($validatedRequest, 'aws_collection_id');
         $image = Arr::get($validatedRequest, 'image');
         $maxUsers = Arr::get($validatedRequest, 'max_users');
         $analysisOperations = Arr::get($validatedRequest, 'analysis_operations');
-
-        // Fetch the user from the public uuid, user id will be used internally.
-        $userId = User::query()->where('public_uuid', $publicUuid)->firstOrFail(['id'])->id;
 
         // Here we can control which event to fire based on the request. For now, we only have search users by image.
         if (in_array(AnalysisOperationName::SEARCH_USERS_BY_IMAGE->value, $analysisOperations, true)) {
