@@ -6,7 +6,7 @@ namespace App\Actions\Recognition;
 
 use App\Actions\Analysis\DeleteAwsSimilarityResultAction;
 use App\Models\AwsUser;
-use App\Services\Recognition\AwsRekognitionService;
+use App\Services\Recognition\AwsRekognitionInterface;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -17,12 +17,12 @@ final readonly class DeleteAwsUserAction
     /**
      * @param DeleteAwsSimilarityResultAction $deleteAwsSimilarityResultAction
      * @param DeleteFacesAction $deleteFacesAction
-     * @param AwsRekognitionService $awsRekognitionService
+     * @param AwsRekognitionInterface $awsRekognitionService
      */
     public function __construct(
         private DeleteAwsSimilarityResultAction $deleteAwsSimilarityResultAction,
         private DeleteFacesAction $deleteFacesAction,
-        private AwsRekognitionService $awsRekognitionService
+        private AwsRekognitionInterface $awsRekognitionService
     ) {}
 
 

@@ -13,7 +13,7 @@ use App\Models\AwsUser;
 use App\Models\Link;
 use App\Models\Subscription;
 use App\Models\User;
-use App\Services\Recognition\AwsRekognitionService;
+use App\Services\Recognition\AwsRekognitionInterface;
 use Mockery\MockInterface;
 use MoeMizrak\Rekognition\Data\ResultData\DeleteFacesResultData;
 use MoeMizrak\Rekognition\Data\ResultData\UserResultData;
@@ -81,7 +81,7 @@ class DeleteUserJobTest extends TestCase
          */
         $methodNameDeleteUser = 'deleteUser';
         $methodResponseDeleteUser = new UserResultData();
-        $this->mock(AwsRekognitionService::class, function (MockInterface $mock) use(
+        $this->mock(AwsRekognitionInterface::class, function (MockInterface $mock) use(
             $methodNameDeleteUser, $methodResponseDeleteUser
         ) {
             $mock->shouldReceive($methodNameDeleteUser)
@@ -163,7 +163,7 @@ class DeleteUserJobTest extends TestCase
         );
         $methodNameDeleteUser = 'deleteUser';
         $methodResponseDeleteUser = new UserResultData();
-        $this->mock(AwsRekognitionService::class, function (MockInterface $mock) use(
+        $this->mock(AwsRekognitionInterface::class, function (MockInterface $mock) use(
             $methodNameDeleteFaces, $methodNameDeleteUser, $methodResponseDeleteFaces, $methodResponseDeleteUser, $secondMethodResponseDeleteFaces
         ) {
             $mock->shouldReceive($methodNameDeleteFaces)
@@ -285,7 +285,7 @@ class DeleteUserJobTest extends TestCase
         );
         $methodNameDeleteUser = 'deleteUser';
         $methodResponseDeleteUser = new UserResultData();
-        $this->mock(AwsRekognitionService::class, function (MockInterface $mock) use(
+        $this->mock(AwsRekognitionInterface::class, function (MockInterface $mock) use(
             $methodNameDeleteFaces, $methodNameDeleteUser, $methodResponseDeleteFaces, $methodResponseDeleteUser, $secondMethodResponseDeleteFaces
         ) {
             $mock->shouldReceive($methodNameDeleteFaces)

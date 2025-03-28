@@ -9,7 +9,7 @@ use App\Events\AssociateFacesEvent;
 use App\Models\AwsCollection;
 use App\Models\AwsUser;
 use App\Models\User;
-use App\Services\Recognition\AwsRekognitionService;
+use App\Services\Recognition\AwsRekognitionInterface;
 use App\Traits\PrepareImageDataTrait;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -36,12 +36,12 @@ final class IndexFacesJob implements ShouldQueue
     /**
      * Execute the job.
      *
-     * @param AwsRekognitionService $awsRekognitionService
+     * @param AwsRekognitionInterface $awsRekognitionService
      * @param CreateAwsFaceAction $createAwsFaceAction
      *
      * @return void
      */
-    public function handle(AwsRekognitionService $awsRekognitionService, CreateAwsFaceAction $createAwsFaceAction): void
+    public function handle(AwsRekognitionInterface $awsRekognitionService, CreateAwsFaceAction $createAwsFaceAction): void
     {
         // Retrieve the AWS collection
         $awsCollection = AwsCollection::query()->findOrFail($this->awsCollectionId);
@@ -60,7 +60,11 @@ final class IndexFacesJob implements ShouldQueue
             $externalImageId = $this->generateExternalImageId($imagePath, $this->user);
 
             // Index faces in the image
-            $indexFacesResultData = $awsRekognitionService->indexFaces($awsCollection->external_collection_id, $imageData, $externalImageId);
+            $indexFacesResultData = $awsRekognitionService->indexFaces(
+                $awsCollection->external_collection_id,
+                $imageData,
+                $externalImageId
+            );
 
             // Delete the image file after indexing the faces
             Storage::delete($imagePath);

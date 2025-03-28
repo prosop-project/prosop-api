@@ -7,6 +7,7 @@ use App\Models\AwsCollection;
 use App\Models\AwsFace;
 use App\Models\AwsUser;
 use App\Models\User;
+use App\Services\Recognition\AwsRekognitionInterface;
 use App\Services\Recognition\AwsRekognitionService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
@@ -32,7 +33,7 @@ class AwsRekognitionServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->awsRekognitionService =app(AwsRekognitionService::class);
+        $this->awsRekognitionService = app(AwsRekognitionInterface::class);
     }
 
     /**

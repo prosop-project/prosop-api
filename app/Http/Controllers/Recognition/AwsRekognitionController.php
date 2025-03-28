@@ -29,7 +29,7 @@ use App\Models\AwsCollection;
 use App\Models\AwsFace;
 use App\Models\AwsUser;
 use App\Models\User;
-use App\Services\Recognition\AwsRekognitionService;
+use App\Services\Recognition\AwsRekognitionInterface;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
@@ -38,9 +38,9 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 final readonly class AwsRekognitionController extends Controller
 {
     /**
-     * @param AwsRekognitionService $awsRekognitionService
+     * @param AwsRekognitionInterface $awsRekognitionService
      */
-    public function __construct(protected AwsRekognitionService $awsRekognitionService) {}
+    public function __construct(protected AwsRekognitionInterface $awsRekognitionService) {}
 
     /**
      * Create new collection in AWS Rekognition and store it in the database (aws_collections table).

@@ -42,14 +42,10 @@ use MoeMizrak\Rekognition\Facades\Rekognition;
  *
  * @class AwsRekognitionService
  */
-class AwsRekognitionService
+final readonly class AwsRekognitionService implements AwsRekognitionInterface
 {
     /**
-     * Create a collection in AWS Rekognition (external collection).
-     *
-     * @param array<string, mixed> $validatedRequest
-     *
-     * @return CreateCollectionResultData
+     * {@inheritDoc}
      */
     public function createCollection(array $validatedRequest): CreateCollectionResultData
     {
@@ -67,11 +63,7 @@ class AwsRekognitionService
     }
 
     /**
-     * List collections on the aws side (external collections).
-     *
-     * @param array<string, mixed> $validatedRequest
-     *
-     * @return ListCollectionsResultData
+     * {@inheritDoc}
      */
     public function listExternalCollections(array $validatedRequest): ListCollectionsResultData
     {
@@ -90,11 +82,7 @@ class AwsRekognitionService
     }
 
     /**
-     * Delete a collection in AWS Rekognition (external collection).
-     *
-     * @param string $externalCollectionId
-     *
-     * @return DeleteCollectionResultData
+     * {@inheritDoc}
      */
     public function deleteCollection(string $externalCollectionId): DeleteCollectionResultData
     {
@@ -107,11 +95,7 @@ class AwsRekognitionService
     }
 
     /**
-     * Create a user in AWS Rekognition (external user).
-     *
-     * @param array<string, mixed> $validatedRequest
-     *
-     * @return UserResultData
+     * {@inheritDoc}
      */
     public function createUser(array $validatedRequest): UserResultData
     {
@@ -134,12 +118,7 @@ class AwsRekognitionService
     }
 
     /**
-     * Delete a user in AWS Rekognition (external user).
-     *
-     * @param AwsUser $awsUser
-     * @param string|null $clientRequestToken
-     *
-     * @return UserResultData
+     * {@inheritDoc}
      */
     public function deleteUser(AwsUser $awsUser, ?string $clientRequestToken = null): UserResultData
     {
@@ -161,11 +140,7 @@ class AwsRekognitionService
     }
 
     /**
-     * List users on the aws side (external users).
-     *
-     * @param array<string, mixed> $validatedRequest
-     *
-     * @return ListUsersResultData
+     * {@inheritDoc}
      */
     public function listExternalAwsUsers(array $validatedRequest): ListUsersResultData
     {
@@ -189,16 +164,13 @@ class AwsRekognitionService
     }
 
     /**
-     * Index faces in AWS Rekognition.
-     *
-     * @param string $externalCollectionId
-     * @param ImageData $imageData
-     * @param string|null $externalImageId
-     *
-     * @return IndexFacesResultData
+     * {@inheritDoc}
      */
-    public function indexFaces(string $externalCollectionId, ImageData $imageData, ?string $externalImageId): IndexFacesResultData
-    {
+    public function indexFaces(
+        string $externalCollectionId,
+        ImageData $imageData,
+        ?string $externalImageId
+    ): IndexFacesResultData {
         // Prepare the data to index faces in AWS Rekognition.
         $indexFacesData = new IndexFacesData(
             collectionId: $externalCollectionId,
@@ -214,13 +186,7 @@ class AwsRekognitionService
     }
 
     /**
-     * Associate faces in AWS Rekognition.
-     *
-     * @param string $externalCollectionId
-     * @param array<int, string> $externalFaceIds
-     * @param string $externalUserId
-     *
-     * @return AssociateFacesResultData
+     * {@inheritDoc}
      */
     public function associateFaces(
         string $externalCollectionId,
@@ -272,11 +238,7 @@ class AwsRekognitionService
     }
 
     /**
-     * List external faces on the AWS side (external faces).
-     *
-     * @param array<string, mixed> $validatedRequest
-     *
-     * @return ListFacesResultData
+     * {@inheritDoc}
      */
     public function listExternalFaces(array $validatedRequest): ListFacesResultData
     {
@@ -315,11 +277,7 @@ class AwsRekognitionService
     }
 
     /**
-     * Delete faces from a collection in AWS Rekognition.
-     *
-     * @param array<string, mixed> $collectionAndFaceIds
-     *
-     * @return DeleteFacesResultData
+     * {@inheritDoc}
      */
     public function deleteFaces(array $collectionAndFaceIds): DeleteFacesResultData
     {
@@ -377,13 +335,7 @@ class AwsRekognitionService
     }
 
     /**
-     * Search users by image in AWS Rekognition.
-     *
-     * @param string $externalCollectionId
-     * @param ImageData $imageData
-     * @param int|null $maxUsers
-     *
-     * @return SearchUsersByImageResultData
+     * {@inheritDoc}
      */
     public function searchUsersByImage(
         string $externalCollectionId,

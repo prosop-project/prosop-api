@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Recognition;
 
 use App\Models\AwsFace;
-use App\Services\Recognition\AwsRekognitionService;
+use App\Services\Recognition\AwsRekognitionInterface;
 use Illuminate\Support\Arr;
 
 /**
@@ -14,9 +14,9 @@ use Illuminate\Support\Arr;
 final readonly class DeleteFacesAction
 {
     /**
-     * @param AwsRekognitionService $awsRekognitionService
+     * @param AwsRekognitionInterface $awsRekognitionService
      */
-    public function __construct(private AwsRekognitionService $awsRekognitionService) {}
+    public function __construct(private AwsRekognitionInterface $awsRekognitionService) {}
 
     /**
      * Handle the action.

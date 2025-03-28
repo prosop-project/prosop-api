@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Recognition;
 
 use App\Models\AwsCollection;
-use App\Services\Recognition\AwsRekognitionService;
+use App\Services\Recognition\AwsRekognitionInterface;
 
 /**
  * @class DeleteCollectionAction
@@ -13,9 +13,9 @@ use App\Services\Recognition\AwsRekognitionService;
 final readonly class DeleteCollectionAction
 {
     /**
-     * @param AwsRekognitionService $awsRekognitionService
+     * @param AwsRekognitionInterface $awsRekognitionService
      */
-    public function __construct(private AwsRekognitionService $awsRekognitionService) {}
+    public function __construct(private AwsRekognitionInterface $awsRekognitionService) {}
 
     /**
      * Handle the action.

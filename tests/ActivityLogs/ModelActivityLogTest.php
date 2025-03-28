@@ -14,7 +14,7 @@ use App\Models\Link;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Services\ActivityLog\CreateAwsFaceModelActivityService;
-use App\Services\Recognition\AwsRekognitionService;
+use App\Services\Recognition\AwsRekognitionInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\Test;
@@ -558,7 +558,7 @@ class ModelActivityLogTest extends TestCase
         $secondAwsFace = AwsFace::factory()->create([
             'aws_collection_id' => $awsCollection->id
         ]);
-        $awsRekognitionService = app(AwsRekognitionService::class);
+        $awsRekognitionService = app(AwsRekognitionInterface::class);
         $action = new DeleteFacesAction($awsRekognitionService);
         // Set the collection and face ids.
         $groupedAwsFaces = [
