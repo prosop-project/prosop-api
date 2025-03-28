@@ -59,4 +59,11 @@ return [
      |--------------------------------------------------------------------------
      */
     'search_result_max_users' => env('AWS_SEARCH_RESULT_MAX_USERS', 5),
+
+    /*
+     |--------------------------------------------------------------------------
+     | AWS Rekognition default value for max faces per user (max faces can be indexed for a user).
+     |--------------------------------------------------------------------------
+     */
+    'max_faces_per_user' => env('AWS_MAX_FACES_PER_USER', 5),
 ];

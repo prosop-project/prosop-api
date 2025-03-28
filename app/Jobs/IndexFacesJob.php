@@ -98,7 +98,7 @@ final class IndexFacesJob implements ShouldQueue
             return;
         }
 
-        // Store the created faces to the aws_faces table (bulk insert)
+        // Store the created faces to the aws_faces table (bulk insert), and delete if the limit is exceeded.
         $createAwsFaceAction->handle($faceParams);
 
         // Retrieve the external face ids

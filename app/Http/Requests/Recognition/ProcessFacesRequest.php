@@ -33,7 +33,7 @@ final class ProcessFacesRequest extends BaseRequest
     {
         return [
             'aws_collection_id' => ['required', 'int', 'exists:aws_collections,id'],
-            'images' => ['required', 'array', 'min:1', 'max:5'],
+            'images' => ['required', 'array', 'min:1', 'max:' . config('aws-rekognition.max_faces_per_user')],
             'images.*' => [
                 'required',
                 'image',
