@@ -10,6 +10,7 @@ use Database\Factories\AwsSimilarityResultFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
 
 /**
  * @property int $id
@@ -30,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class AwsSimilarityResult extends Model
 {
     /** @use HasFactory<AwsSimilarityResultFactory> */
-    use HasFactory, LogsActivityTrait;
+    use HasFactory, KeepsDeletedModels, LogsActivityTrait;
 
     /**
      * The attributes that should be cast.

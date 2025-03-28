@@ -41,7 +41,6 @@ class IndexFacesJobTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseHas('aws_faces', [
-            'user_id' => $user->id,
             'aws_user_id' => $awsUser->id,
             'aws_collection_id' => $awsCollection->id,
             'external_image_id' => 'test_external_image_id',

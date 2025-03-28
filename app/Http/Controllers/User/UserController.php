@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\User;
 
-use App\Actions\Subscription\DeleteUserAction;
 use App\Actions\User\UpdateUserAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\DeleteUserRequest;
@@ -13,6 +12,7 @@ use App\Http\Resources\GenericResponseResource;
 use App\Http\Resources\ProfileResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\User\UserService;
 use Illuminate\Support\Arr;
 
 /**
@@ -63,18 +63,18 @@ final readonly class UserController extends Controller
      *
      * @param DeleteUserRequest $_
      * @param User $user
-     * @param DeleteUserAction $deleteUserAction
+     * @param UserService $userService
      *
      * @return GenericResponseResource
      */
     public function delete(
         DeleteUserRequest $_,
         User $user,
-        DeleteUserAction $deleteUserAction
+        UserService $userService,
     ): GenericResponseResource {
-        $deleteUserAction->handle($user);
+        $userService->deleteUser($user);
 
-        return new GenericResponseResource('User deleted successfully!');
+        return new GenericResponseResource('User is deleted successfully!');
     }
 
     /**

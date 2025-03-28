@@ -2,9 +2,11 @@
 
 namespace Tests\API\User;
 
+use App\Jobs\DeleteUserJob;
 use App\Models\Link;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Queue;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -160,9 +162,31 @@ class UserApiTest extends TestCase
         $response->assertOk()
             ->assertJson([
                 'data' => [
-                    'message' => 'User deleted successfully!',
+                    'message' => 'User is deleted successfully!',
                 ]
             ]);
+    }
+
+    #[Test]
+    public function it_tests_delete_user_route_if_queue_job_is_getting_dispatched()
+    {
+        /* SETUP */
+        Queue::fake();
+        $myPassword = 'my_password';
+        $user = User::factory()->create(['username' => 'test_user', 'password' => Hash::make($myPassword)]);
+        $existingUser = [
+            'username' => $user->username,
+            'password' => $myPassword,
+        ];
+        $token = $this->postJson(route('auth.login'), $existingUser)->json('data.token');
+
+        /* EXECUTE */
+        $this->withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+        ])->deleteJson(route('users.delete', ['user' => $user->id, 'password' => $myPassword]));
+
+        /* ASSERT */
+        Queue::assertPushed(DeleteUserJob::class);
     }
 
     #[Test]

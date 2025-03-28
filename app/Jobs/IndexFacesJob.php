@@ -75,7 +75,6 @@ final class IndexFacesJob implements ShouldQueue
 
             // Add the face parameters to the array
             $faceParams[] = [
-                'user_id' => $this->user->id,
                 'aws_user_id' => $awsUser->id,
                 'aws_collection_id' => $this->awsCollectionId,
                 'external_face_id' => $faceRecord?->face?->faceId,

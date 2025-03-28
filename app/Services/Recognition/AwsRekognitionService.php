@@ -9,6 +9,7 @@ use App\Events\ProcessFaceEvent;
 use App\Events\SearchUsersByImageEvent;
 use App\Models\AwsCollection;
 use App\Models\AwsFace;
+use App\Models\AwsUser;
 use App\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
@@ -41,7 +42,7 @@ use MoeMizrak\Rekognition\Facades\Rekognition;
  *
  * @class AwsRekognitionService
  */
-final readonly class AwsRekognitionService
+class AwsRekognitionService
 {
     /**
      * Create a collection in AWS Rekognition (external collection).
@@ -135,16 +136,16 @@ final readonly class AwsRekognitionService
     /**
      * Delete a user in AWS Rekognition (external user).
      *
-     * @param array<string, mixed> $validatedRequest
+     * @param AwsUser $awsUser
+     * @param string|null $clientRequestToken
      *
      * @return UserResultData
      */
-    public function deleteUser(array $validatedRequest): UserResultData
+    public function deleteUser(AwsUser $awsUser, ?string $clientRequestToken = null): UserResultData
     {
         // Extract the required values
-        $awsCollectionId = Arr::get($validatedRequest, 'aws_collection_id');
-        $externalUserId = Arr::get($validatedRequest, 'external_user_id'); // external_user_id is set as reference_prefix-user_id in CreateOrDeleteAwsUserRequest
-        $clientRequestToken = Arr::get($validatedRequest, 'client_request_token');
+        $awsCollectionId = $awsUser->aws_collection_id;
+        $externalUserId = $awsUser->external_user_id;
 
         // Fetch the AWS collection
         $awsCollection = AwsCollection::query()->where('id', $awsCollectionId)->firstOrFail();
@@ -316,23 +317,28 @@ final readonly class AwsRekognitionService
     /**
      * Delete faces from a collection in AWS Rekognition.
      *
-     * @param array<string, mixed> $validatedRequest
+     * @param array<string, mixed> $collectionAndFaceIds
      *
      * @return DeleteFacesResultData
      */
-    public function deleteFaces(array $validatedRequest): DeleteFacesResultData
+    public function deleteFaces(array $collectionAndFaceIds): DeleteFacesResultData
     {
         // Retrieve the AWS collection id from the request
-        $awsCollectionId = Arr::get($validatedRequest, 'aws_collection_id');
+        $awsCollectionId = Arr::get($collectionAndFaceIds, 'aws_collection_id');
         $awsCollection = AwsCollection::query()->where('id', $awsCollectionId)->firstOrFail(); // Fetch the AWS collection
         $externalCollectionId = $awsCollection->external_collection_id; // On the AWS side, the collection id refers to the external_collection_id on our side
 
-        // Retrieve the aws face ids, and get the external face ids from the database
-        $awsFaceIds = Arr::get($validatedRequest, 'aws_face_ids', []);
-        $externalFaceIds = AwsFace::query()
-            ->whereIn('id', $awsFaceIds)
-            ->pluck('external_face_id')
-            ->toArray();
+        // Retrieve the external face ids from the collectionAndFaceIds array
+        $awsFaceIds = Arr::get($collectionAndFaceIds, 'aws_face_ids', []);
+        $externalFaceIds = Arr::get($collectionAndFaceIds, 'external_face_ids', []);
+
+        // If external face ids are empty, get the external face ids from the database
+        if (empty($externalFaceIds)) {
+            $externalFaceIds = AwsFace::query()
+                ->whereIn('id', $awsFaceIds)
+                ->pluck('external_face_id')
+                ->toArray();
+        }
 
         // Prepare the data to delete faces in AWS Rekognition
         $deleteFacesData = new DeleteFacesData(

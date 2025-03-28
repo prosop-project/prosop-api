@@ -317,12 +317,12 @@ class RecognitionApiTest extends TestCase
                 'data' => [
                     [
                         'id' => $firstAwsFace->id,
-                        'user_id' => $firstAwsFace->user_id,
+                        'aws_user_id' => $firstAwsFace->aws_user_id,
                         'external_face_id' => $firstAwsFace->external_face_id,
                     ],
                     [
                         'id' => $secondAwsFace->id,
-                        'user_id' => $secondAwsFace->user_id,
+                        'aws_user_id' => $secondAwsFace->aws_user_id,
                         'external_face_id' => $secondAwsFace->external_face_id,
                     ],
                 ]
@@ -337,12 +337,16 @@ class RecognitionApiTest extends TestCase
         $this->mockRekognitionClient($methodName);
         $awsCollection = AwsCollection::factory()->create();
         $user = User::factory()->create();
-        $firstAwsFace = AwsFace::factory()->create([
+        $awsUser = AwsUser::factory()->create([
             'user_id' => $user->id,
             'aws_collection_id' => $awsCollection->id,
         ]);
+        $firstAwsFace = AwsFace::factory()->create([
+            'aws_user_id' => $awsUser->id,
+            'aws_collection_id' => $awsCollection->id,
+        ]);
         $secondAwsFace = AwsFace::factory()->create([
-            'user_id' => $user->id,
+            'aws_user_id' => $awsUser->id,
             'aws_collection_id' => $awsCollection->id,
         ]);
         $parameters = [

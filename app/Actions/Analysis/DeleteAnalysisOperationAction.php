@@ -26,8 +26,11 @@ final readonly class DeleteAnalysisOperationAction
      */
     public function handle(int|AnalysisOperation $analysisOperation): void
     {
-        // Check if the $analysisOperation is an integer. If it is not, it is an instance of AnalysisOperation.
-        if (! ($analysisOperation instanceof AnalysisOperation)) {
+        // Check if the $analysisOperation is an instance of AnalysisOperation.
+        if ($analysisOperation instanceof AnalysisOperation) {
+            // Load the awsSimilarityResults relationship.
+            $analysisOperation->load('awsSimilarityResults');
+        } else {
             // Retrieve the AnalysisOperation from the database.
             $analysisOperation = AnalysisOperation::query()
                 ->with('awsSimilarityResults')

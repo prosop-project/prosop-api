@@ -16,7 +16,6 @@ return new class extends Migration
     {
         Schema::create('aws_faces', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained();
             $table->foreignId('aws_user_id')->nullable()->constrained();
             $table->foreignId('aws_collection_id')->constrained();
             $table->uuid('external_face_id')->comment('This is the face id that is set by aws.');
@@ -28,7 +27,6 @@ return new class extends Migration
             $table->timestamps();
 
             // Indexes
-            $table->index('user_id');
             $table->index('aws_user_id');
             $table->index('aws_collection_id');
 

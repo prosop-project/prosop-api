@@ -22,8 +22,6 @@ final class AwsFaceResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'user_id' => $this->user_id,
-            'user' => new UserResource($this->whenLoaded('user')),
             'aws_user_id' => $this->aws_user_id,
             'aws_collection_id' => $this->aws_collection_id,
             'external_face_id' => $this->external_face_id,

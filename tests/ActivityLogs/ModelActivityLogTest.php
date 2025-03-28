@@ -14,6 +14,7 @@ use App\Models\Link;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Services\ActivityLog\CreateAwsFaceModelActivityService;
+use App\Services\Recognition\AwsRekognitionService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\Test;
@@ -494,7 +495,6 @@ class ModelActivityLogTest extends TestCase
         $imageIdSecond = fake()->uuid();
         $faceParams = [
             [
-                'user_id' => $this->user->id,
                 'aws_user_id' => $awsUser->id,
                 'aws_collection_id' => $awsCollection->id,
                 'external_face_id' => $firstExternalFaceId,
@@ -505,7 +505,6 @@ class ModelActivityLogTest extends TestCase
                 'updated_at' => $this->now,
             ],
             [
-                'user_id' => $this->user->id,
                 'aws_user_id' => $awsUser->id,
                 'aws_collection_id' => $awsCollection->id,
                 'external_face_id' => $secondExternalFaceId,
@@ -524,7 +523,6 @@ class ModelActivityLogTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseHas('aws_faces', [
-            'user_id' => $this->user->id,
             'aws_user_id' => $awsUser->id,
             'aws_collection_id' => $awsCollection->id,
             'external_face_id' => $firstExternalFaceId,
@@ -533,7 +531,6 @@ class ModelActivityLogTest extends TestCase
             'image_id' => $imageId,
         ]);
         $this->assertDatabaseHas('aws_faces', [
-            'user_id' => $this->user->id,
             'aws_user_id' => $awsUser->id,
             'aws_collection_id' => $awsCollection->id,
             'external_face_id' => $secondExternalFaceId,
@@ -551,15 +548,30 @@ class ModelActivityLogTest extends TestCase
     }
 
     #[Test]
-    public function it_tests_whether_delete_face_action_triggers_activity_log_succesfully()
+    public function it_tests_whether_delete_face_action_triggers_activity_log_successfully()
     {
         /* SETUP */
-        $firstAwsFace = AwsFace::factory()->create();
-        $secondAwsFace = AwsFace::factory()->create();
-        $action = new DeleteFacesAction();
+        $awsCollection = AwsCollection::factory()->create();
+        $firstAwsFace = AwsFace::factory()->create([
+            'aws_collection_id' => $awsCollection->id
+        ]);
+        $secondAwsFace = AwsFace::factory()->create([
+            'aws_collection_id' => $awsCollection->id
+        ]);
+        $awsRekognitionService = app(AwsRekognitionService::class);
+        $action = new DeleteFacesAction($awsRekognitionService);
+        // Set the collection and face ids.
+        $groupedAwsFaces = [
+            [
+                'aws_collection_id' => $awsCollection->id,
+                'aws_face_ids' => [$firstAwsFace->id, $secondAwsFace->id],
+            ],
+        ];
+        $methodName = 'deleteFaces';
+        $this->mockRekognitionClient($methodName);
 
         /* EXECUTE */
-        $action->handle([$firstAwsFace->id, $secondAwsFace->id]);
+        $action->handle($groupedAwsFaces);
 
         /* ASSERT */
         $this->assertDatabaseHas('activity_log', [

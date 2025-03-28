@@ -10,6 +10,7 @@ use Database\Factories\SubscriptionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
 
 /**
  * @property int $id
@@ -26,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class Subscription extends Model
 {
     /** @use HasFactory<SubscriptionFactory> */
-    use HasFactory, LogsActivityTrait;
+    use HasFactory, KeepsDeletedModels, LogsActivityTrait;
 
     /**
      * The attributes that should be cast.
