@@ -31,5 +31,6 @@
         <env name="AWS_REKOGNITION_REFERENCE_PREFIX" value="rekognition-test-v1"/>
         <env name="AWS_USER_MATCH_THRESHOLD" value="80"/>
         <env name="AWS_SEARCH_RESULT_MAX_USERS" value="5"/>
+        <env name="AWS_MAX_FACES_PER_USER" value="5"/>
     </php>
 </phpunit>

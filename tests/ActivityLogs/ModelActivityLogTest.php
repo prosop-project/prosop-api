@@ -516,7 +516,8 @@ class ModelActivityLogTest extends TestCase
             ],
         ];
         $activityService =  app(CreateAwsFaceModelActivityService::class);
-        $action = new CreateAwsFaceAction($activityService);
+        $deleteFacesAction = app(DeleteFacesAction::class);
+        $action = new CreateAwsFaceAction($activityService, $deleteFacesAction);
 
         /* EXECUTE */
         $action->handle($faceParams);
