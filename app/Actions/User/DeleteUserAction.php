@@ -30,7 +30,6 @@ final readonly class DeleteUserAction
         private PurgeUserSubscriptionsAction $purgeUserSubscriptionsAction,
     ) {}
 
-
     /**
      * Handle the action.
      *
@@ -49,7 +48,7 @@ final readonly class DeleteUserAction
         $user->load([
             'links',
             'awsUsers',
-            'analysisOperations'
+            'analysisOperations',
         ]);
 
         /*

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Recognition;
 
 use App\Models\AwsUser;

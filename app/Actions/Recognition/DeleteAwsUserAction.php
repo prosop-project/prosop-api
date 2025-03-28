@@ -25,7 +25,6 @@ final readonly class DeleteAwsUserAction
         private AwsRekognitionInterface $awsRekognitionService
     ) {}
 
-
     /**
      * Handle the action.
      *
@@ -41,7 +40,7 @@ final readonly class DeleteAwsUserAction
          */
         $awsUser->load([
             'awsSimilarityResults',
-            'awsFaces'
+            'awsFaces',
         ]);
 
         // Group the aws faces by aws collection id.
