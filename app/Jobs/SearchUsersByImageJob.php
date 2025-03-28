@@ -10,7 +10,7 @@ use App\Enums\Status;
 use App\Models\AnalysisOperation;
 use App\Models\AwsCollection;
 use App\Models\AwsUser;
-use App\Services\Recognition\AwsRekognitionService;
+use App\Services\Recognition\AwsRekognitionInterface;
 use App\Traits\PrepareImageDataTrait;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -34,14 +34,14 @@ final class SearchUsersByImageJob implements ShouldQueue
     /**
      * Execute the job.
      *
-     * @param AwsRekognitionService $awsRekognitionService
+     * @param AwsRekognitionInterface $awsRekognitionService
      * @param UpdateAwsUserAndCreateSimilarityResultAction $updateAwsUserAndCreateSimilarityResultAction
      * @param UpdateAnalysisOperationAction $updateAnalysisOperationAction
      *
      * @return void
      */
     public function handle(
-        AwsRekognitionService $awsRekognitionService,
+        AwsRekognitionInterface $awsRekognitionService,
         UpdateAwsUserAndCreateSimilarityResultAction $updateAwsUserAndCreateSimilarityResultAction,
         UpdateAnalysisOperationAction $updateAnalysisOperationAction,
     ): void {

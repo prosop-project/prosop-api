@@ -9,6 +9,7 @@ use App\Events\ProcessFaceEvent;
 use App\Events\SearchUsersByImageEvent;
 use App\Models\AwsCollection;
 use App\Models\AwsFace;
+use App\Models\AwsUser;
 use App\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
@@ -41,14 +42,10 @@ use MoeMizrak\Rekognition\Facades\Rekognition;
  *
  * @class AwsRekognitionService
  */
-final readonly class AwsRekognitionService
+final readonly class AwsRekognitionService implements AwsRekognitionInterface
 {
     /**
-     * Create a collection in AWS Rekognition (external collection).
-     *
-     * @param array<string, mixed> $validatedRequest
-     *
-     * @return CreateCollectionResultData
+     * {@inheritDoc}
      */
     public function createCollection(array $validatedRequest): CreateCollectionResultData
     {
@@ -66,11 +63,7 @@ final readonly class AwsRekognitionService
     }
 
     /**
-     * List collections on the aws side (external collections).
-     *
-     * @param array<string, mixed> $validatedRequest
-     *
-     * @return ListCollectionsResultData
+     * {@inheritDoc}
      */
     public function listExternalCollections(array $validatedRequest): ListCollectionsResultData
     {
@@ -89,11 +82,7 @@ final readonly class AwsRekognitionService
     }
 
     /**
-     * Delete a collection in AWS Rekognition (external collection).
-     *
-     * @param string $externalCollectionId
-     *
-     * @return DeleteCollectionResultData
+     * {@inheritDoc}
      */
     public function deleteCollection(string $externalCollectionId): DeleteCollectionResultData
     {
@@ -106,11 +95,7 @@ final readonly class AwsRekognitionService
     }
 
     /**
-     * Create a user in AWS Rekognition (external user).
-     *
-     * @param array<string, mixed> $validatedRequest
-     *
-     * @return UserResultData
+     * {@inheritDoc}
      */
     public function createUser(array $validatedRequest): UserResultData
     {
@@ -133,18 +118,13 @@ final readonly class AwsRekognitionService
     }
 
     /**
-     * Delete a user in AWS Rekognition (external user).
-     *
-     * @param array<string, mixed> $validatedRequest
-     *
-     * @return UserResultData
+     * {@inheritDoc}
      */
-    public function deleteUser(array $validatedRequest): UserResultData
+    public function deleteUser(AwsUser $awsUser, ?string $clientRequestToken = null): UserResultData
     {
         // Extract the required values
-        $awsCollectionId = Arr::get($validatedRequest, 'aws_collection_id');
-        $externalUserId = Arr::get($validatedRequest, 'external_user_id'); // external_user_id is set as reference_prefix-user_id in CreateOrDeleteAwsUserRequest
-        $clientRequestToken = Arr::get($validatedRequest, 'client_request_token');
+        $awsCollectionId = $awsUser->aws_collection_id;
+        $externalUserId = $awsUser->external_user_id;
 
         // Fetch the AWS collection
         $awsCollection = AwsCollection::query()->where('id', $awsCollectionId)->firstOrFail();
@@ -160,11 +140,7 @@ final readonly class AwsRekognitionService
     }
 
     /**
-     * List users on the aws side (external users).
-     *
-     * @param array<string, mixed> $validatedRequest
-     *
-     * @return ListUsersResultData
+     * {@inheritDoc}
      */
     public function listExternalAwsUsers(array $validatedRequest): ListUsersResultData
     {
@@ -188,16 +164,13 @@ final readonly class AwsRekognitionService
     }
 
     /**
-     * Index faces in AWS Rekognition.
-     *
-     * @param string $externalCollectionId
-     * @param ImageData $imageData
-     * @param string|null $externalImageId
-     *
-     * @return IndexFacesResultData
+     * {@inheritDoc}
      */
-    public function indexFaces(string $externalCollectionId, ImageData $imageData, ?string $externalImageId): IndexFacesResultData
-    {
+    public function indexFaces(
+        string $externalCollectionId,
+        ImageData $imageData,
+        ?string $externalImageId
+    ): IndexFacesResultData {
         // Prepare the data to index faces in AWS Rekognition.
         $indexFacesData = new IndexFacesData(
             collectionId: $externalCollectionId,
@@ -213,13 +186,7 @@ final readonly class AwsRekognitionService
     }
 
     /**
-     * Associate faces in AWS Rekognition.
-     *
-     * @param string $externalCollectionId
-     * @param array<int, string> $externalFaceIds
-     * @param string $externalUserId
-     *
-     * @return AssociateFacesResultData
+     * {@inheritDoc}
      */
     public function associateFaces(
         string $externalCollectionId,
@@ -271,11 +238,7 @@ final readonly class AwsRekognitionService
     }
 
     /**
-     * List external faces on the AWS side (external faces).
-     *
-     * @param array<string, mixed> $validatedRequest
-     *
-     * @return ListFacesResultData
+     * {@inheritDoc}
      */
     public function listExternalFaces(array $validatedRequest): ListFacesResultData
     {
@@ -314,25 +277,26 @@ final readonly class AwsRekognitionService
     }
 
     /**
-     * Delete faces from a collection in AWS Rekognition.
-     *
-     * @param array<string, mixed> $validatedRequest
-     *
-     * @return DeleteFacesResultData
+     * {@inheritDoc}
      */
-    public function deleteFaces(array $validatedRequest): DeleteFacesResultData
+    public function deleteFaces(array $collectionAndFaceIds): DeleteFacesResultData
     {
         // Retrieve the AWS collection id from the request
-        $awsCollectionId = Arr::get($validatedRequest, 'aws_collection_id');
+        $awsCollectionId = Arr::get($collectionAndFaceIds, 'aws_collection_id');
         $awsCollection = AwsCollection::query()->where('id', $awsCollectionId)->firstOrFail(); // Fetch the AWS collection
         $externalCollectionId = $awsCollection->external_collection_id; // On the AWS side, the collection id refers to the external_collection_id on our side
 
-        // Retrieve the aws face ids, and get the external face ids from the database
-        $awsFaceIds = Arr::get($validatedRequest, 'aws_face_ids', []);
-        $externalFaceIds = AwsFace::query()
-            ->whereIn('id', $awsFaceIds)
-            ->pluck('external_face_id')
-            ->toArray();
+        // Retrieve the external face ids from the collectionAndFaceIds array
+        $awsFaceIds = Arr::get($collectionAndFaceIds, 'aws_face_ids', []);
+        $externalFaceIds = Arr::get($collectionAndFaceIds, 'external_face_ids', []);
+
+        // If external face ids are empty, get the external face ids from the database
+        if (empty($externalFaceIds)) {
+            $externalFaceIds = AwsFace::query()
+                ->whereIn('id', $awsFaceIds)
+                ->pluck('external_face_id')
+                ->toArray();
+        }
 
         // Prepare the data to delete faces in AWS Rekognition
         $deleteFacesData = new DeleteFacesData(
@@ -371,13 +335,7 @@ final readonly class AwsRekognitionService
     }
 
     /**
-     * Search users by image in AWS Rekognition.
-     *
-     * @param string $externalCollectionId
-     * @param ImageData $imageData
-     * @param int|null $maxUsers
-     *
-     * @return SearchUsersByImageResultData
+     * {@inheritDoc}
      */
     public function searchUsersByImage(
         string $externalCollectionId,

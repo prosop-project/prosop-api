@@ -7,7 +7,7 @@ namespace App\Jobs;
 use App\Actions\Recognition\UpdateAwsUserAction;
 use App\Models\AwsCollection;
 use App\Models\AwsUser;
-use App\Services\Recognition\AwsRekognitionService;
+use App\Services\Recognition\AwsRekognitionInterface;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -33,8 +33,13 @@ final class AssociateFacesJob implements ShouldQueue
 
     /**
      * Execute the job.
+     *
+     * @param AwsRekognitionInterface $awsRekognitionService
+     * @param UpdateAwsUserAction $updateAwsUserAction
+     *
+     * @return void
      */
-    public function handle(AwsRekognitionService $awsRekognitionService, UpdateAwsUserAction $updateAwsUserAction): void
+    public function handle(AwsRekognitionInterface $awsRekognitionService, UpdateAwsUserAction $updateAwsUserAction): void
     {
         // Retrieve the AWS external collection id
         $externalCollectionId = $this->awsCollection->external_collection_id;

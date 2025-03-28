@@ -29,7 +29,7 @@ use App\Models\AwsCollection;
 use App\Models\AwsFace;
 use App\Models\AwsUser;
 use App\Models\User;
-use App\Services\Recognition\AwsRekognitionService;
+use App\Services\Recognition\AwsRekognitionInterface;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
@@ -38,9 +38,9 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 final readonly class AwsRekognitionController extends Controller
 {
     /**
-     * @param AwsRekognitionService $awsRekognitionService
+     * @param AwsRekognitionInterface $awsRekognitionService
      */
-    public function __construct(protected AwsRekognitionService $awsRekognitionService) {}
+    public function __construct(protected AwsRekognitionInterface $awsRekognitionService) {}
 
     /**
      * Create new collection in AWS Rekognition and store it in the database (aws_collections table).
@@ -75,9 +75,6 @@ final readonly class AwsRekognitionController extends Controller
         AwsCollection $awsCollection,
         DeleteCollectionAction $deleteCollectionAction
     ): GenericResponseResource {
-        // Delete the collection from the aws side (external collection).
-        $this->awsRekognitionService->deleteCollection($awsCollection->external_collection_id);
-
         // Delete the collection from the database.
         $deleteCollectionAction->handle($awsCollection);
 
@@ -142,11 +139,17 @@ final readonly class AwsRekognitionController extends Controller
         CreateOrDeleteAwsUserRequest $request,
         DeleteAwsUserAction $deleteAwsUserAction
     ): GenericResponseResource {
-        // Delete a user on AWS Rekognition side by sending a request to AWS Rekognition API.
-        $this->awsRekognitionService->deleteUser($request->all());
+        // Retrieve the client request token from the request.
+        $clientRequestToken = $request->client_request_token;
+
+        // Find the user in the aws_users table.
+        $awsUser = AwsUser::query()
+            ->where('aws_collection_id', $request->aws_collection_id)
+            ->where('external_user_id', $request->external_user_id)
+            ->firstOrFail();
 
         // Delete the existing user in the aws_users table.
-        $deleteAwsUserAction->handle($request);
+        $deleteAwsUserAction->handle($awsUser, $clientRequestToken);
 
         return new GenericResponseResource('Aws user is deleted from both database and aws side successfully!');
     }
@@ -227,11 +230,16 @@ final readonly class AwsRekognitionController extends Controller
      */
     public function deleteFaces(DeleteFacesRequest $request, DeleteFacesAction $deleteFacesAction): GenericResponseResource
     {
-        // Delete a user on AWS Rekognition side by sending a request to AWS Rekognition API.
-        $this->awsRekognitionService->deleteFaces($request->validated());
+        // Set the collection and face ids.
+        $groupedAwsFaces = [
+            [
+                'aws_collection_id' => $request->aws_collection_id,
+                'aws_face_ids' => $request->aws_face_ids,
+            ],
+        ];
 
         // Delete the existing user in the aws_users table.
-        $deleteFacesAction->handle($request->aws_face_ids);
+        $deleteFacesAction->handle($groupedAwsFaces);
 
         return new GenericResponseResource('Faces are deleted from both database and aws side successfully!');
     }

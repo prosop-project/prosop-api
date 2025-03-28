@@ -12,10 +12,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
 
 /**
  * @property int $id
- * @property int|null $user_id
  * @property int|null $aws_user_id
  * @property int $aws_collection_id
  * @property string $external_face_id
@@ -25,7 +25,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
- * @property-read User $user
  * @property-read AwsUser $awsUser
  * @property-read AwsCollection $awsCollection
  * @property-read Collection<int, AwsSimilarityResult> $awsSimilarityResults
@@ -35,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 final class AwsFace extends Model
 {
     /** @use HasFactory<AwsFaceFactory> */
-    use HasFactory, LogsActivityTrait;
+    use HasFactory, KeepsDeletedModels, LogsActivityTrait;
 
     /**
      * The attributes that should be cast.
@@ -49,16 +48,6 @@ final class AwsFace extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
-    }
-
-    /**
-     * Get the user who owns this AWS face.
-     *
-     * @return BelongsTo<User, covariant $this>
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 
     /**

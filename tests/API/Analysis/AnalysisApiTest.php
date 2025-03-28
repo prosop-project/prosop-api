@@ -11,6 +11,7 @@ use App\Models\AwsSimilarityResult;
 use App\Models\AwsUser;
 use App\Models\User;
 use PHPUnit\Framework\Attributes\Test;
+use Spatie\DeletedModels\Models\DeletedModel;
 use Tests\TestCase;
 
 class AnalysisApiTest extends TestCase
@@ -296,6 +297,65 @@ class AnalysisApiTest extends TestCase
             'event' => ActivityEvent::DELETED->value,
             'properties->old->id' => $secondAwsSimilarityResult->id,
             'properties->old->analysis_operation_id' => $analysisOperation->id,
+        ]);
+    }
+
+    #[Test]
+    public function it_tests_delete_analysis_operation_route_if_deleted_models_are_saved_in_deleted_models_table()
+    {
+        /* SETUP */
+        $userWhoRequestedAnalysis = User::factory()->create();
+        $awsCollection = AwsCollection::factory()->create();
+        $analysisOperation = AnalysisOperation::factory()->create([
+            'user_id' => $userWhoRequestedAnalysis->id,
+            'aws_collection_id' => $awsCollection->id,
+            'operation' => AnalysisOperationName::SEARCH_USERS_BY_IMAGE->value,
+        ]);
+        $firstUser = User::factory()->create();
+        $firstAwsUser = AwsUser::factory()->create([
+            'user_id' => $firstUser->id,
+        ]);
+        $firstAwsSimilarityResult = AwsSimilarityResult::factory()->create([
+            'analysis_operation_id' => $analysisOperation->id,
+            'aws_user_id' => $firstAwsUser->id,
+        ]);
+        $secondUser = User::factory()->create();
+        $secondAwsUser = AwsUser::factory()->create([
+            'user_id' => $secondUser->id,
+        ]);
+        $secondAwsSimilarityResult = AwsSimilarityResult::factory()->create([
+            'analysis_operation_id' => $analysisOperation->id,
+            'aws_user_id' => $secondAwsUser->id,
+        ]);
+        $params = [
+            'public_uuid' => $userWhoRequestedAnalysis->public_uuid,
+            'analysis_operation_id' => $analysisOperation->id,
+        ];
+        $this->deleteJson(route('analysis.delete.operation', $params));
+
+        /* EXECUTE */
+        $deletedAnalysisOperation = DeletedModel::query()
+            ->where('key', $analysisOperation->id)
+            ->where('model', AnalysisOperation::class)
+            ->first();
+        $firstDeletedAwsSimilarityResult = DeletedModel::query()
+            ->where('key', $firstAwsSimilarityResult->id)
+            ->where('model', AwsSimilarityResult::class)
+            ->first();
+        $secondDeletedAwsSimilarityResult = DeletedModel::query()
+            ->where('key', $secondAwsSimilarityResult->id)
+            ->where('model', AwsSimilarityResult::class)
+            ->first();
+
+        /* ASSERT */
+        $this->assertNotNull($deletedAnalysisOperation);
+        $this->assertNotNull($firstDeletedAwsSimilarityResult);
+        $this->assertNotNull($secondDeletedAwsSimilarityResult);
+        $this->assertDatabaseMissing('analysis_operations', [
+            'id' => $analysisOperation->id,
+        ]);
+        $this->assertDatabaseMissing('aws_similarity_results', [
+            'analysis_operation_id' => $analysisOperation->id,
         ]);
     }
 

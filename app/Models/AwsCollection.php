@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
 
 /**
  * @property int $id
@@ -30,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 final class AwsCollection extends Model
 {
     /** @use HasFactory<AwsCollectionFactory> */
-    use HasFactory, LogsActivityTrait;
+    use HasFactory, KeepsDeletedModels, LogsActivityTrait;
 
     /**
      * The attributes that should be cast.

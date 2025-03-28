@@ -13,6 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
+use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -36,7 +37,6 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property-read Collection<int, Subscription> $subscriptions
  * @property-read Collection<int, Subscription> $subscribers
  * @property-read Collection<int, AwsUser> $awsUsers
- * @property-read Collection<int, AwsFace> $awsFaces
  * @property-read Collection<int, AnalysisOperation> $analysisOperations
  * @property-read Collection<int, Role> $roles
  *
@@ -45,7 +45,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 final class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, LogsActivityTrait, Notifiable;
+    use HasFactory, HasRoles, KeepsDeletedModels, LogsActivityTrait, Notifiable;
 
     /**
      * The attributes that should be hidden for serialization.
@@ -111,16 +111,6 @@ final class User extends Authenticatable implements JWTSubject
     public function awsUsers(): HasMany
     {
         return $this->hasMany(AwsUser::class);
-    }
-
-    /**
-     * Get the user's aws faces (User has many AWS faces).
-     *
-     * @return HasMany<AwsFace, covariant $this>
-     */
-    public function awsFaces(): HasMany
-    {
-        return $this->hasMany(AwsFace::class);
     }
 
     /**

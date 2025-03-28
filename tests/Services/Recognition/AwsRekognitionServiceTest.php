@@ -5,7 +5,9 @@ namespace Tests\Services\Recognition;
 use App\Jobs\IndexFacesJob;
 use App\Models\AwsCollection;
 use App\Models\AwsFace;
+use App\Models\AwsUser;
 use App\Models\User;
+use App\Services\Recognition\AwsRekognitionInterface;
 use App\Services\Recognition\AwsRekognitionService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
@@ -31,7 +33,7 @@ class AwsRekognitionServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->awsRekognitionService =app(AwsRekognitionService::class);
+        $this->awsRekognitionService = app(AwsRekognitionInterface::class);
     }
 
     /**
@@ -141,15 +143,14 @@ class AwsRekognitionServiceTest extends TestCase
     {
         /* SETUP */
         $awsCollection = AwsCollection::factory()->create();
-        $validatedRequest = [
+        $awsUser = AwsUser::factory()->create([
             'aws_collection_id' => $awsCollection->id,
-            'external_user_id' => 'test_user_id',
-        ];
+        ]);
         $methodName = 'deleteUser';
         $this->mockRekognitionClient($methodName);
 
         /* EXECUTE */
-        $response = $this->awsRekognitionService->deleteUser($validatedRequest);
+        $response = $this->awsRekognitionService->deleteUser($awsUser);
 
         /* ASSERT */
         $this->metaDataAssertions($response);
@@ -264,13 +265,17 @@ class AwsRekognitionServiceTest extends TestCase
         /* SETUP */
         $awsCollection = AwsCollection::factory()->create();
         $user = User::factory()->create();
-        $firstAwsFace = AwsFace::factory()->create([
+        $awsUser = AwsUser::factory()->create([
             'aws_collection_id' => $awsCollection->id,
             'user_id' => $user->id,
         ]);
+        $firstAwsFace = AwsFace::factory()->create([
+            'aws_collection_id' => $awsCollection->id,
+            'aws_user_id' => $awsUser->id,
+        ]);
         $secondAwsFace = AwsFace::factory()->create([
             'aws_collection_id' => $awsCollection->id,
-            'user_id' => $user->id,
+            'aws_user_id' => $awsUser->id,
         ]);
         $validatedRequest = [
             'aws_collection_id' => $awsCollection->id,

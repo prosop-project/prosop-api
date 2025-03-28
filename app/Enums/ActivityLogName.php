@@ -20,4 +20,6 @@ enum ActivityLogName: string
     case REMOVE_ROLE_FROM_USER_ACTIVITY = 'remove_role_from_user_activity';
     case ANALYSIS_OPERATION_MODEL_ACTIVITY = 'AnalysisOperation_model_activity';
     case AWS_SIMILARITY_RESULT_MODEL_ACTIVITY = 'AwsSimilarityResult_model_activity';
+    case LINK_MODEL_ACTIVITY = 'Link_model_activity';
+    case SUBSCRIPTION_MODEL_ACTIVITY = 'Subscription_model_activity';
 }

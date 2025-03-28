@@ -44,7 +44,6 @@ final class AwsFaceFactory extends Factory
         ]);
 
         return [
-            'user_id' => $user->id,
             'aws_user_id' => $awsUser->id,
             'aws_collection_id' => $awsCollection->id,
             'external_face_id' => fake()->uuid,
