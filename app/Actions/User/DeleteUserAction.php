@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Actions\User;
 
 use App\Actions\Analysis\DeleteAnalysisOperationAction;
+use App\Actions\Follower\PurgeUserRelatedFollowersAction;
 use App\Actions\Link\DeleteLinkAction;
 use App\Actions\Recognition\DeleteAwsUserAction;
-use App\Actions\Follower\PurgeUserRelatedFollowersAction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -24,9 +24,9 @@ final readonly class DeleteUserAction
      * @param PurgeUserRelatedFollowersAction $purgeUserRelatedFollowersAction
      */
     public function __construct(
-        private DeleteLinkAction                $deleteLinkAction,
-        private DeleteAwsUserAction             $deleteAwsUserAction,
-        private DeleteAnalysisOperationAction   $deleteAnalysisOperationAction,
+        private DeleteLinkAction $deleteLinkAction,
+        private DeleteAwsUserAction $deleteAwsUserAction,
+        private DeleteAnalysisOperationAction $deleteAnalysisOperationAction,
         private PurgeUserRelatedFollowersAction $purgeUserRelatedFollowersAction,
     ) {}
 
