@@ -11,18 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('subscriptions', function (Blueprint $table) {
+        Schema::create('followers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->comment('subscribed to')->constrained('users');
-            $table->foreignId('subscriber_id')->comment('subscribed by')->constrained('users');
+            $table->foreignId('user_id')->comment('being followed')->constrained('users');
+            $table->foreignId('follower_id')->comment('followed by')->constrained('users');
             $table->timestamps();
 
             // Indexes
             $table->index('user_id');
-            $table->index('subscriber_id');
+            $table->index('follower_id');
 
             // Unique keys
-            $table->unique(['user_id', 'subscriber_id']);
+            $table->unique(['user_id', 'follower_id']);
         });
     }
 
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subscriptions');
+        Schema::dropIfExists('followers');
     }
 };

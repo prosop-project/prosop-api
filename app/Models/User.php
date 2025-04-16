@@ -34,8 +34,8 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property Carbon|null $updated_at
  *
  * @property-read Collection<int, Link> $links
- * @property-read Collection<int, Subscription> $subscriptions
- * @property-read Collection<int, Subscription> $subscribers
+ * @property-read Collection<int, Follower> $following
+ * @property-read Collection<int, Follower> $followers
  * @property-read Collection<int, AwsUser> $awsUsers
  * @property-read Collection<int, AnalysisOperation> $analysisOperations
  * @property-read Collection<int, Role> $roles
@@ -84,23 +84,23 @@ final class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Get the user's subscriptions. (Users that this user has subscribed to)
+     * Get the all users that are being followed by this user.
      *
-     * @return HasMany<Subscription, covariant $this>
+     * @return HasMany<Follower, covariant $this>
      */
-    public function subscriptions(): HasMany
+    public function following(): HasMany
     {
-        return $this->hasMany(Subscription::class, 'subscriber_id');
+        return $this->hasMany(Follower::class, 'follower_id');
     }
 
     /**
-     * Get the user's subscribers. (Users who have subscribed to this user)
+     * Get the user's followers. (Users who have followed to this user)
      *
-     * @return HasMany<Subscription, covariant $this>
+     * @return HasMany<Follower, covariant $this>
      */
-    public function subscribers(): HasMany
+    public function followers(): HasMany
     {
-        return $this->hasMany(Subscription::class, 'user_id');
+        return $this->hasMany(Follower::class, 'user_id');
     }
 
     /**

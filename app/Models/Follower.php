@@ -6,7 +6,7 @@ namespace App\Models;
 
 use App\Models\Traits\LogsActivityTrait;
 use Carbon\Carbon;
-use Database\Factories\SubscriptionFactory;
+use Database\Factories\FollowerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,18 +15,18 @@ use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
 /**
  * @property int $id
  * @property int $user_id
- * @property int $subscriber_id
+ * @property int $follower_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
  * @property-read User $user
- * @property-read User $subscriber
+ * @property-read User $follower
  *
- * @class Subscription
+ * @class Follower
  */
-final class Subscription extends Model
+final class Follower extends Model
 {
-    /** @use HasFactory<SubscriptionFactory> */
+    /** @use HasFactory<FollowerFactory> */
     use HasFactory, KeepsDeletedModels, LogsActivityTrait;
 
     /**
@@ -43,7 +43,7 @@ final class Subscription extends Model
     }
 
     /**
-     * Get the user who is being subscribed to.
+     * Get the user who is being followed.
      *
      * @return BelongsTo<User, covariant $this>
      */
@@ -53,12 +53,12 @@ final class Subscription extends Model
     }
 
     /**
-     * Get the user who is subscribing.
+     * Get the user who is following (follower).
      *
      * @return BelongsTo<User, covariant $this>
      */
-    public function subscriber(): BelongsTo
+    public function follower(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'subscriber_id');
+        return $this->belongsTo(User::class, 'follower_id');
     }
 }

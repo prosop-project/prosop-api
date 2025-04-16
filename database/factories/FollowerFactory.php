@@ -4,27 +4,27 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Subscription;
+use App\Models\Follower;
 use App\Models\User;
 use Database\Factories\Concerns\RefreshOnCreateTrait;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Subscription>
+ * @extends Factory<Follower>
  */
-final class SubscriptionFactory extends Factory
+final class FollowerFactory extends Factory
 {
     /**
-     * @use RefreshOnCreateTrait<Subscription>
+     * @use RefreshOnCreateTrait<Follower>
      */
     use RefreshOnCreateTrait;
 
     /**
      * The name of the factory's corresponding model.
      *
-     * @var class-string<Subscription>
+     * @var class-string<Follower>
      */
-    protected $model = Subscription::class;
+    protected $model = Follower::class;
 
     /**
      * Define the model's default state.
@@ -35,7 +35,7 @@ final class SubscriptionFactory extends Factory
     {
         return [
             'user_id' =>  User::factory(),
-            'subscriber_id' => User::factory(),
+            'follower_id' => User::factory(),
         ];
     }
 }

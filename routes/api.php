@@ -8,7 +8,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Link\LinkController;
 use App\Http\Controllers\Permission\PermissionController;
 use App\Http\Controllers\Recognition\AwsRekognitionController;
-use App\Http\Controllers\Subscription\SubscriptionController;
+use App\Http\Controllers\Follower\FollowerController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Middleware\ValidateUserIsAdmin;
 use Illuminate\Support\Facades\Route;
@@ -100,17 +100,17 @@ Route::middleware('auth:api')->prefix('links')->name('links.')->group(function (
 
 /*
  |--------------------------------------
- | Endpoints for managing subscriptions.
+ | Endpoints for managing followers.
  |--------------------------------------
  */
-Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+Route::prefix('followers')->name('followers.')->group(function () {
     Route::middleware('auth:api')->group(function () {
-        Route::post('/{user}', [SubscriptionController::class, 'subscribe'])->name('subscribe');
-        Route::delete('/{user}', [SubscriptionController::class, 'unsubscribe'])->name('unsubscribe');
+        Route::post('/{user}', [FollowerController::class, 'follow'])->name('follow');
+        Route::delete('/{user}', [FollowerController::class, 'unfollow'])->name('unfollow');
     });
 
-    Route::get('/{user}', [SubscriptionController::class, 'subscriptions'])->name('list');
-    Route::get('/{user}/subscribers', [SubscriptionController::class, 'subscribers'])->name('subscribers');
+    Route::get('/{user}', [FollowerController::class, 'following'])->name('following');
+    Route::get('/{user}/followers', [FollowerController::class, 'followers'])->name('followers');
 });
 
 /*

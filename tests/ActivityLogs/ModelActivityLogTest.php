@@ -11,7 +11,7 @@ use App\Models\AwsCollection;
 use App\Models\AwsFace;
 use App\Models\AwsUser;
 use App\Models\Link;
-use App\Models\Subscription;
+use App\Models\Follower;
 use App\Models\User;
 use App\Services\ActivityLog\CreateAwsFaceModelActivityService;
 use App\Services\Recognition\AwsRekognitionInterface;
@@ -330,39 +330,39 @@ class ModelActivityLogTest extends TestCase
     }
 
     #[Test]
-    public function it_tests_whether_creating_subscription_model_activity_is_being_logged_successfully()
+    public function it_tests_whether_creating_follower_model_activity_is_being_logged_successfully()
     {
         /* SETUP */
         $newUser = User::factory()->create();
 
         /* EXECUTE */
-        $subscription = Subscription::factory()->create([
+        $follower = Follower::factory()->create([
             'user_id' => $newUser->id,
-            'subscriber_id' => $this->user->id,
+            'follower_id' => $this->user->id,
         ]);
 
         /* ASSERT */
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'Subscription_model_activity',
-            'description' => 'Subscription is created!',
-            'subject_id' => $subscription->id,
-            'subject_type' => Subscription::class,
+            'log_name' => 'Follower_model_activity',
+            'description' => 'Follower is created!',
+            'subject_id' => $follower->id,
+            'subject_type' => Follower::class,
             'event' => ActivityEvent::CREATED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->attributes->user_id' => $newUser->id,
-            'properties->attributes->subscriber_id' => $this->user->id,
+            'properties->attributes->follower_id' => $this->user->id,
         ]);
     }
 
     #[Test]
-    public function it_tests_whether_unsubscribing_activity_is_being_logged_successfully()
+    public function it_tests_whether_unfollow_activity_is_being_logged_successfully()
     {
         /* SETUP */
         $newUser = User::factory()->create();
-        $subscription = Subscription::factory()->create([
+        $follower = Follower::factory()->create([
             'user_id' => $newUser->id,
-            'subscriber_id' => $this->user->id,
+            'follower_id' => $this->user->id,
         ]);
         $parameters = [
             'user' => $newUser->id,
@@ -371,19 +371,19 @@ class ModelActivityLogTest extends TestCase
         /* EXECUTE */
         $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->deleteJson(route('subscriptions.unsubscribe', $parameters));
+        ])->deleteJson(route('followers.unfollow', $parameters));
 
         /* ASSERT */
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => 'Subscription_model_activity',
-            'subject_id' => $subscription->id,
-            'subject_type' => Subscription::class,
-            'description' => 'Subscription is deleted!',
+            'log_name' => 'Follower_model_activity',
+            'subject_id' => $follower->id,
+            'subject_type' => Follower::class,
+            'description' => 'Follower is deleted!',
             'event' => ActivityEvent::DELETED->value,
             'causer_id' => $this->user->id,
             'causer_type' => User::class,
             'properties->old->user_id' => $newUser->id,
-            'properties->old->subscriber_id' => $this->user->id,
+            'properties->old->follower_id' => $this->user->id,
         ]);
     }
 

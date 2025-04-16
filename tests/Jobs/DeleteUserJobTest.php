@@ -11,7 +11,7 @@ use App\Models\AwsFace;
 use App\Models\AwsSimilarityResult;
 use App\Models\AwsUser;
 use App\Models\Link;
-use App\Models\Subscription;
+use App\Models\Follower;
 use App\Models\User;
 use App\Services\Recognition\AwsRekognitionInterface;
 use Mockery\MockInterface;
@@ -341,27 +341,27 @@ class DeleteUserJobTest extends TestCase
     }
 
     #[Test]
-    public function it_tests_delete_user_job_checking_whether_related_subscriptions_deleted_successfully()
+    public function it_tests_delete_user_job_checking_whether_related_followers_deleted_successfully()
     {
         /* SETUP */
         $userA = User::factory()->create();
         $userB = User::factory()->create();
         $userC = User::factory()->create();
         $userD = User::factory()->create();
-        // UserB subscribes to UserA
-        $firstSubscription = Subscription::factory()->create([
+        // UserB follows to UserA
+        $firstFollower = Follower::factory()->create([
             'user_id' => $userA->id,
-            'subscriber_id' => $userB->id
+            'follower_id' => $userB->id
         ]);
-        // UserC subscribes to UserA
-        $secondSubscription = Subscription::factory()->create([
+        // UserC follows to UserA
+        $secondFollower = Follower::factory()->create([
             'user_id' => $userA->id,
-            'subscriber_id' => $userC->id
+            'follower_id' => $userC->id
         ]);
-        // UserA subscribes to UserD
-        $thirdSubscription = Subscription::factory()->create([
+        // UserA follows to UserD
+        $thirdFollower = Follower::factory()->create([
             'user_id' => $userD->id,
-            'subscriber_id' => $userA->id
+            'follower_id' => $userA->id
         ]);
 
         /* EXECUTE */
@@ -369,46 +369,46 @@ class DeleteUserJobTest extends TestCase
 
         /* ASSERT */
         $this->assertDatabaseMissing('users', ['id' => $userA->id]);
-        $this->assertDatabaseMissing('subscriptions', [
-            'id' => $firstSubscription->id
+        $this->assertDatabaseMissing('followers', [
+            'id' => $firstFollower->id
         ]);
-        $this->assertDatabaseMissing('subscriptions', [
-            'id' => $secondSubscription->id
+        $this->assertDatabaseMissing('followers', [
+            'id' => $secondFollower->id
         ]);
-        $this->assertDatabaseMissing('subscriptions', [
-            'id' => $thirdSubscription->id
-        ]);
-        $this->assertDatabaseHas('deleted_models', [
-            'key' => $firstSubscription->id,
-            'model' => Subscription::class,
+        $this->assertDatabaseMissing('followers', [
+            'id' => $thirdFollower->id
         ]);
         $this->assertDatabaseHas('deleted_models', [
-            'key' => $secondSubscription->id,
-            'model' => Subscription::class,
+            'key' => $firstFollower->id,
+            'model' => Follower::class,
         ]);
         $this->assertDatabaseHas('deleted_models', [
-            'key' => $thirdSubscription->id,
-            'model' => Subscription::class,
+            'key' => $secondFollower->id,
+            'model' => Follower::class,
+        ]);
+        $this->assertDatabaseHas('deleted_models', [
+            'key' => $thirdFollower->id,
+            'model' => Follower::class,
         ]);
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => ActivityLogName::SUBSCRIPTION_MODEL_ACTIVITY->value,
-            'description' => 'Subscription is deleted!',
-            'subject_type' => Subscription::class,
-            'subject_id' => $firstSubscription->id,
+            'log_name' => ActivityLogName::FOLLOWER_MODEL_ACTIVITY->value,
+            'description' => 'Follower is deleted!',
+            'subject_type' => Follower::class,
+            'subject_id' => $firstFollower->id,
             'event' => ActivityEvent::DELETED->value,
         ]);
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => ActivityLogName::SUBSCRIPTION_MODEL_ACTIVITY->value,
-            'description' => 'Subscription is deleted!',
-            'subject_type' => Subscription::class,
-            'subject_id' => $secondSubscription->id,
+            'log_name' => ActivityLogName::FOLLOWER_MODEL_ACTIVITY->value,
+            'description' => 'Follower is deleted!',
+            'subject_type' => Follower::class,
+            'subject_id' => $secondFollower->id,
             'event' => ActivityEvent::DELETED->value,
         ]);
         $this->assertDatabaseHas('activity_log', [
-            'log_name' => ActivityLogName::SUBSCRIPTION_MODEL_ACTIVITY->value,
-            'description' => 'Subscription is deleted!',
-            'subject_type' => Subscription::class,
-            'subject_id' => $thirdSubscription->id,
+            'log_name' => ActivityLogName::FOLLOWER_MODEL_ACTIVITY->value,
+            'description' => 'Follower is deleted!',
+            'subject_type' => Follower::class,
+            'subject_id' => $thirdFollower->id,
             'event' => ActivityEvent::DELETED->value,
         ]);
     }
