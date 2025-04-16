@@ -1,15 +1,15 @@
 <?php
 
-namespace Tests\API\Subscription;
+namespace Tests\API\Follower;
 
-use App\Models\Subscription;
+use App\Models\Follower;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class SubscriptionApiTest extends TestCase
+class FollowerApiTest extends TestCase
 {
     private string $token = "";
     private User|Authenticatable $user;
@@ -28,7 +28,7 @@ class SubscriptionApiTest extends TestCase
     }
 
     #[Test]
-    public function it_checks_if_given_user_is_same_with_authenticated_user_validation_for_subscribe_request()
+    public function it_checks_if_given_user_is_same_with_authenticated_user_validation_for_follow_request()
     {
         /* SETUP */
         $parameters = [
@@ -39,15 +39,15 @@ class SubscriptionApiTest extends TestCase
         /* EXECUTE */
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('subscriptions.subscribe', $parameters));
+        ])->postJson(route('followers.follow', $parameters));
 
         /* ASSERT */
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['subscribe.yourself']);
+            ->assertJsonValidationErrors(['follow.yourself']);
     }
 
     #[Test]
-    public function it_tests_subscribe_request()
+    public function it_tests_follow_request()
     {
         /* SETUP */
         $newUser = User::factory()->create();
@@ -58,24 +58,24 @@ class SubscriptionApiTest extends TestCase
         /* EXECUTE */
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('subscriptions.subscribe', $parameters));
+        ])->postJson(route('followers.follow', $parameters));
 
         /* ASSERT */
         $response->assertCreated()
             ->assertJson([
                 'data' => [
                     'user_id' => $parameters['user'],
-                    'subscriber_id' => auth()->id(),
+                    'follower_id' => auth()->id(),
                 ]
             ]);
-        $this->assertDatabaseHas('subscriptions', [
+        $this->assertDatabaseHas('followers', [
             'user_id' => $parameters['user'],
-            'subscriber_id' => auth()->id(),
+            'follower_id' => auth()->id(),
         ]);
     }
 
     #[Test]
-    public function it_tests_unsubscribe_request()
+    public function it_tests_unfollow_request()
     {
         /* SETUP */
         $newUser = User::factory()->create();
@@ -84,89 +84,89 @@ class SubscriptionApiTest extends TestCase
         ];
         $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('subscriptions.subscribe', $parameters));
+        ])->postJson(route('followers.follow', $parameters));
 
         /* EXECUTE */
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->deleteJson(route('subscriptions.unsubscribe', $parameters));
+        ])->deleteJson(route('followers.unfollow', $parameters));
 
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
                 'data' => [
-                    'message' => 'Subscription is removed successfully!',
+                    'message' => 'Follower is removed successfully!',
                 ]
             ]);
-        $this->assertDatabaseMissing('subscriptions', [
+        $this->assertDatabaseMissing('followers', [
             'user_id' => $parameters['user'],
-            'subscriber_id' => auth()->id(),
+            'follower_id' => auth()->id(),
         ]);
     }
 
     #[Test]
-    public function it_tests_subscriptions_request_that_is_the_list_of_users_subscribed_by_provided_user()
+    public function it_tests_followers_request_that_is_the_list_of_users_followed_by_provided_user()
     {
         /* SETUP */
-        $firstSubscription = Subscription::factory()->create([
+        $firstFollower = Follower::factory()->create([
             'user_id' => User::factory(),
-            'subscriber_id' => $this->user->id,
+            'follower_id' => $this->user->id,
         ]);
-        $secondSubscription = Subscription::factory()->create([
+        $secondFollower = Follower::factory()->create([
             'user_id' => User::factory(),
-            'subscriber_id' => $this->user->id,
+            'follower_id' => $this->user->id,
         ]);
         $listParameters = [
             'user' => $this->user->id,
         ];
 
         /* EXECUTE */
-        $response = $this->getJson(route('subscriptions.list', $listParameters));
+        $response = $this->getJson(route('followers.following', $listParameters));
 
         /* ASSERT */
         $response->assertOk()
             ->assertJson([
                 'data' => [
                     [
-                        'user_id' => $firstSubscription->user_id,
-                        'subscriber_id' => $this->user->id,
+                        'user_id' => $firstFollower->user_id,
+                        'follower_id' => $this->user->id,
                     ],
                     [
-                        'user_id' => $secondSubscription->user_id,
-                        'subscriber_id' => $this->user->id,
+                        'user_id' => $secondFollower->user_id,
+                        'follower_id' => $this->user->id,
                     ],
                 ]
             ]);
-        $this->assertDatabaseHas('subscriptions', [
-            'user_id' => $firstSubscription->user_id,
-            'subscriber_id' => $this->user->id,
+        $this->assertDatabaseHas('followers', [
+            'user_id' => $firstFollower->user_id,
+            'follower_id' => $this->user->id,
         ]);
-        $this->assertDatabaseHas('subscriptions', [
-            'user_id' => $secondSubscription->user_id,
-            'subscriber_id' => $this->user->id,
+        $this->assertDatabaseHas('followers', [
+            'user_id' => $secondFollower->user_id,
+            'follower_id' => $this->user->id,
         ]);
     }
 
     #[Test]
-    public function it_tests_subscribers_request_that_is_the_list_of_users_that_subscribed_to_provided_user()
+    public function it_tests_followers_request_that_is_the_list_of_users_that_followed_to_provided_user()
     {
         /* SETUP */
         $firstUser = User::factory()->create();
-        Subscription::factory()->create([
+        Follower::factory()->create([
             'user_id' => $this->user->id,
-            'subscriber_id' => $firstUser->id,
+            'follower_id' => $firstUser->id,
         ]);
         $secondUser = User::factory()->create();
-        Subscription::factory()->create([
+        Follower::factory()->create([
             'user_id' => $this->user->id,
-            'subscriber_id' => $secondUser->id,
+            'follower_id' => $secondUser->id,
         ]);
         $listParameters = [
             'user' => $this->user->id,
         ];
 
         /* EXECUTE */
-        $response = $this->getJson(route('subscriptions.subscribers', $listParameters));
+        $response = $this->getJson(route('followers.followers', $listParameters));
 
         /* ASSERT */
         $response->assertOk()
@@ -174,26 +174,26 @@ class SubscriptionApiTest extends TestCase
                 'data' => [
                     [
                         'user_id' => $this->user->id,
-                        'subscriber_id' => $firstUser->id,
+                        'follower_id' => $firstUser->id,
                     ],
                     [
                         'user_id' => $this->user->id,
-                        'subscriber_id' => $secondUser->id,
+                        'follower_id' => $secondUser->id,
                     ],
                 ]
             ]);
-        $this->assertDatabaseHas('subscriptions', [
+        $this->assertDatabaseHas('followers', [
             'user_id' => $this->user->id,
-            'subscriber_id' => $firstUser->id,
+            'follower_id' => $firstUser->id,
         ]);
-        $this->assertDatabaseHas('subscriptions', [
+        $this->assertDatabaseHas('followers', [
             'user_id' => $this->user->id,
-            'subscriber_id' => $secondUser->id,
+            'follower_id' => $secondUser->id,
         ]);
     }
 
     #[Test]
-    public function it_tests_subscribe_request_cannot_subscribe_same_user()
+    public function it_tests_follow_request_cannot_follow_same_user()
     {
         /* SETUP */
         $newUser = User::factory()->create();
@@ -204,13 +204,13 @@ class SubscriptionApiTest extends TestCase
         /* EXECUTE */
         $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('subscriptions.subscribe', $parameters));
+        ])->postJson(route('followers.follow', $parameters));
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
-        ])->postJson(route('subscriptions.subscribe', $parameters));
+        ])->postJson(route('followers.follow', $parameters));
 
         /* ASSERT */
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['subscribe.unique']);
+            ->assertJsonValidationErrors(['follow.unique']);
     }
 }

@@ -21,5 +21,5 @@ enum ActivityLogName: string
     case ANALYSIS_OPERATION_MODEL_ACTIVITY = 'AnalysisOperation_model_activity';
     case AWS_SIMILARITY_RESULT_MODEL_ACTIVITY = 'AwsSimilarityResult_model_activity';
     case LINK_MODEL_ACTIVITY = 'Link_model_activity';
-    case SUBSCRIPTION_MODEL_ACTIVITY = 'Subscription_model_activity';
+    case FOLLOWER_MODEL_ACTIVITY = 'Follower_model_activity';
 }

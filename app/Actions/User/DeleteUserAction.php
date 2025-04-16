@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Actions\User;
 
 use App\Actions\Analysis\DeleteAnalysisOperationAction;
+use App\Actions\Follower\PurgeUserRelatedFollowersAction;
 use App\Actions\Link\DeleteLinkAction;
 use App\Actions\Recognition\DeleteAwsUserAction;
-use App\Actions\Subscription\PurgeUserSubscriptionsAction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -21,13 +21,13 @@ final readonly class DeleteUserAction
      * @param DeleteLinkAction $deleteLinkAction
      * @param DeleteAwsUserAction $deleteAwsUserAction
      * @param DeleteAnalysisOperationAction $deleteAnalysisOperationAction
-     * @param PurgeUserSubscriptionsAction $purgeUserSubscriptionsAction
+     * @param PurgeUserRelatedFollowersAction $purgeUserRelatedFollowersAction
      */
     public function __construct(
         private DeleteLinkAction $deleteLinkAction,
         private DeleteAwsUserAction $deleteAwsUserAction,
         private DeleteAnalysisOperationAction $deleteAnalysisOperationAction,
-        private PurgeUserSubscriptionsAction $purgeUserSubscriptionsAction,
+        private PurgeUserRelatedFollowersAction $purgeUserRelatedFollowersAction,
     ) {}
 
     /**
@@ -78,9 +78,9 @@ final readonly class DeleteUserAction
             });
 
             /*
-             * Delete the subscriptions from the subscription model/table (Purge the user's subscriptions - by checking both subscriber_id and user_id).
+             * Delete the user related followers (Purge the user related followers - by checking both follower_id and user_id).
              */
-            $this->purgeUserSubscriptionsAction->handle($user);
+            $this->purgeUserRelatedFollowersAction->handle($user);
 
             /*
              * Delete the user from the user model/table.

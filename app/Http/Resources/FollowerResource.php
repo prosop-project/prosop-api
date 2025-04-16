@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\Subscription;
+use App\Models\Follower;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin Subscription
+ * @mixin Follower
  */
-final class SubscriptionResource extends JsonResource
+final class FollowerResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -22,7 +22,7 @@ final class SubscriptionResource extends JsonResource
     {
         return [
             'user_id' => $this->user_id,
-            'subscriber_id' => $this->subscriber_id,
+            'follower_id' => $this->follower_id,
         ];
     }
 }
